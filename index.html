@@ -58,7 +58,7 @@
 
   <!-- Top Navigation Bar -->
   <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-inner shrink-0">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -72,44 +72,37 @@
       </div>
 
       <!-- Navigation Tabs & Controls -->
-      <div class="flex items-center gap-2 sm:gap-3 no-print">
-        <nav class="hidden lg:flex bg-slate-800 p-1 rounded-lg border border-slate-700">
-          <button id="tabBtnPlanner" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow">
+      <div class="flex items-center gap-2 sm:gap-2.5 no-print shrink-0">
+        <nav class="hidden lg:flex bg-slate-800 p-1 rounded-lg border border-slate-700 shrink-0">
+          <button id="tabBtnPlanner" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow whitespace-nowrap">
             排期与甘特图
           </button>
-          <button id="tabBtnHistory" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1">
+          <button id="tabBtnHistory" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1 whitespace-nowrap">
             <span id="lblTabHistory">共享历史与修改记录</span>
             <span id="badgeHistoryCount" class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/30 text-indigo-200">2</span>
           </button>
-          <button id="tabBtnProducts" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white">
+          <button id="tabBtnProducts" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white whitespace-nowrap">
             常规产品默认表
           </button>
-          <button id="tabBtnShipping" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white">
+          <button id="tabBtnShipping" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white whitespace-nowrap">
             各国船运与差旅总表
           </button>
         </nav>
 
-        <!-- Operator Name Input -->
-        <div class="hidden sm:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 gap-1.5">
-          <span id="lblOperatorTag" class="text-[11px] text-slate-400">操作人:</span>
-          <input id="inputOperatorName" type="text" value="张工" class="w-16 bg-transparent text-xs font-semibold text-white focus:outline-none border-b border-dashed border-slate-600 focus:border-indigo-400" />
+        <!-- Operator Name Input (Auto-assigned per browser/device & saved locally) -->
+        <div class="hidden sm:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 gap-1.5 shrink-0" title="当前浏览器/设备专属操作人标识，可直接点击修改并自动保存在本机">
+          <span id="lblOperatorTag" class="text-[11px] text-slate-400 whitespace-nowrap">操作人:</span>
+          <input id="inputOperatorName" type="text" value="" class="w-28 bg-transparent text-xs font-semibold text-white focus:outline-none border-b border-dashed border-slate-600 focus:border-indigo-400" />
         </div>
 
         <!-- Admin Mode Toggle Button -->
-        <button id="btnAdminToggle" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5">
-          <span id="adminStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <button id="btnAdminToggle" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5 whitespace-nowrap shrink-0">
+          <span id="adminStatusDot" class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
           <span id="lblAdminBtn">管理员登录</span>
         </button>
 
-        <button id="btnDeployGuide" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center gap-1.5">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-          </svg>
-          <span id="lblDeployBtn" class="hidden sm:inline">Cloudflare 部署说明</span>
-        </button>
-
-        <button id="btnLangToggle" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 transition flex items-center gap-1.5 shadow-sm">
-          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="btnLangToggle" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 transition flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0">
+          <svg class="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
           </svg>
           <span id="lblLangSwitch">EN / 中文</span>
@@ -135,7 +128,7 @@
   </header>
 
   <!-- Main Workspace Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
     <!-- VIEW 1: PLANNER & GANTT CHART -->
     <section id="viewPlanner" class="space-y-6">
@@ -178,86 +171,90 @@
       </div>
 
       <!-- Top Configuration Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
 
         <!-- Left Column: Project & Destination Settings (5 cols) -->
-        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-5 print-shadow-none">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-5 rounded-full bg-indigo-600"></span>
-              <h2 id="secProjectSettings" class="text-base font-bold text-slate-900">1. 项目节点与目的国配置</h2>
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col justify-between space-y-4 print-shadow-none">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-5 rounded-full bg-indigo-600"></span>
+                <h2 id="secProjectSettings" class="text-base font-bold text-slate-900">1. 项目节点与目的国配置</h2>
+              </div>
+              <button id="btnResetDefaults" type="button" class="text-xs text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 no-print whitespace-nowrap">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span id="lblResetBtn">重置排期</span>
+              </button>
             </div>
-            <button id="btnResetDefaults" type="button" class="text-xs text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 no-print">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span id="lblResetBtn">重置排期</span>
-            </button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <!-- Project Name -->
+              <div class="sm:col-span-2">
+                <label for="inputProjectName" id="lblProjectName" class="block text-xs font-semibold text-slate-700 mb-1">项目名称 / 客户名称</label>
+                <input id="inputProjectName" type="text" value="海外旗舰店开业交付项目" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              </div>
+
+              <!-- Calculation Mode -->
+              <div>
+                <label for="selectCalcMode" id="lblCalcMode" class="block text-xs font-semibold text-slate-700 mb-1 whitespace-nowrap">排期推算方式</label>
+                <select id="selectCalcMode" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="backward" id="optBackward">按开业/交付节点倒推</option>
+                  <option value="forward" id="optForward">按启动/下单日期正推</option>
+                </select>
+              </div>
+
+              <!-- Target / Anchor Date -->
+              <div>
+                <label for="inputAnchorDate" id="lblAnchorDate" class="block text-xs font-semibold text-slate-700 mb-1 whitespace-nowrap">目标开业 / 交付完成日期</label>
+                <input id="inputAnchorDate" type="date" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <!-- Destination Country Selector -->
+              <div class="sm:col-span-2">
+                <div class="flex items-center justify-between mb-1">
+                  <label for="selectCountry" id="lblCountry" class="block text-xs font-semibold text-slate-700 truncate">目的国家/地区 (自动匹配船运与差旅)</label>
+                  <button id="btnJumpShippingTable" type="button" class="text-xs text-indigo-600 hover:underline no-print whitespace-nowrap shrink-0">管理国家总表 →</button>
+                </div>
+                <select id="selectCountry" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </select>
+              </div>
+
+              <!-- Shipping Days (Manual Override allowed) -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="inputShippingDays" id="lblShippingDays" class="text-xs font-semibold text-slate-700 whitespace-nowrap">船运时间 (天)</label>
+                  <span id="badgeShippingEditable" class="text-[10px] font-normal text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded whitespace-nowrap">可手动修改</span>
+                </div>
+                <input id="inputShippingDays" type="number" min="0" max="180" step="1" class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+
+              <!-- Engineer Round-Trip Travel Days -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label for="inputTravelDays" id="lblTravelDays" class="text-xs font-semibold text-slate-700 whitespace-nowrap">差旅来回 (天)</label>
+                  <span id="badgeTravelRegion" class="text-[10px] font-normal text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded whitespace-nowrap">亚洲默认2天</span>
+                </div>
+                <div class="relative flex items-center">
+                  <input id="inputTravelDays" type="number" min="0" max="30" step="1" class="w-full rounded-lg border border-slate-300 pl-3 pr-20 py-1.5 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <div class="absolute right-1.5 flex items-center gap-1 no-print">
+                    <button id="btnQuickAsia" type="button" title="亚洲2天" class="px-1.5 py-0.5 text-[10px] font-semibold rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600">2d</button>
+                    <button id="btnQuickLong4" type="button" title="欧美澳4天" class="px-1.5 py-0.5 text-[10px] font-semibold rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600">4d</button>
+                    <button id="btnQuickLong5" type="button" title="欧美澳5天" class="px-1.5 py-0.5 text-[10px] font-semibold rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-600">5d</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Project Name -->
-            <div class="sm:col-span-2">
-              <label for="inputProjectName" id="lblProjectName" class="block text-xs font-semibold text-slate-700 mb-1">项目名称 / 客户名称</label>
-              <input id="inputProjectName" type="text" value="海外旗舰店开业交付项目" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-
-            <!-- Calculation Mode -->
-            <div>
-              <label for="selectCalcMode" id="lblCalcMode" class="block text-xs font-semibold text-slate-700 mb-1">排期推算方式</label>
-              <select id="selectCalcMode" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="backward" id="optBackward">按开业/交付节点倒推 (推荐)</option>
-                <option value="forward" id="optForward">按启动/下单日期正推</option>
-              </select>
-            </div>
-
-            <!-- Target / Anchor Date -->
-            <div>
-              <label for="inputAnchorDate" id="lblAnchorDate" class="block text-xs font-semibold text-slate-700 mb-1">目标开业/交付完成日期</label>
-              <input id="inputAnchorDate" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
-
-            <!-- Destination Country Selector -->
-            <div class="sm:col-span-2">
-              <div class="flex items-center justify-between mb-1">
-                <label for="selectCountry" id="lblCountry" class="block text-xs font-semibold text-slate-700">目的国家/地区 (自动匹配船运与差旅)</label>
-                <button id="btnJumpShippingTable" type="button" class="text-xs text-indigo-600 hover:underline no-print">编辑国家总表 →</button>
-              </div>
-              <select id="selectCountry" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              </select>
-            </div>
-
-            <!-- Shipping Days (Manual Override allowed) -->
-            <div>
-              <label for="inputShippingDays" class="block text-xs font-semibold text-slate-700 mb-1">
-                <span id="lblShippingDays">船运时间 (天)</span>
-                <span id="badgeShippingEditable" class="ml-1 text-[10px] font-normal text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">可手动修改</span>
-              </label>
-              <input id="inputShippingDays" type="number" min="0" max="180" step="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
-
-            <!-- Engineer Round-Trip Travel Days -->
-            <div>
-              <label for="inputTravelDays" class="block text-xs font-semibold text-slate-700 mb-1">
-                <span id="lblTravelDays">工程师来回时间 (天)</span>
-                <span id="badgeTravelRegion" class="ml-1 text-[10px] font-normal text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">亚洲默认2天</span>
-              </label>
-              <div class="flex gap-1.5">
-                <input id="inputTravelDays" type="number" min="0" max="30" step="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <button id="btnQuickAsia" type="button" title="亚洲2天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">2d</button>
-                <button id="btnQuickLong4" type="button" title="欧美澳4天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">4d</button>
-                <button id="btnQuickLong5" type="button" title="欧美澳5天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">5d</button>
-              </div>
-            </div>
-
-            <!-- Travel Split Mode -->
-            <div class="sm:col-span-2 pt-1">
-              <label for="selectTravelMode" id="lblTravelMode" class="block text-xs font-semibold text-slate-700 mb-1">工程师来回时间排期呈现方式</label>
-              <select id="selectTravelMode" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="split" id="optTravelSplit">拆分为「工程师去程」+「安装调试培训」+「工程师返程」(总来回天数平分)</option>
-                <option value="before" id="optTravelBefore">合并为「工程师差旅往返」阶段，在开业/交付节点前全部完成</option>
-              </select>
-            </div>
+          <!-- Travel Split Mode -->
+          <div class="pt-3 border-t border-slate-100">
+            <label for="selectTravelMode" id="lblTravelMode" class="block text-xs font-semibold text-slate-700 mb-1">工程师来回时间排期呈现方式</label>
+            <select id="selectTravelMode" class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="split" id="optTravelSplit">拆分为「工程师去程」+「安装调试培训」+「工程师返程」</option>
+              <option value="before" id="optTravelBefore">合并为「工程师差旅往返」阶段，在交付前完成</option>
+            </select>
           </div>
         </div>
 
@@ -270,22 +267,22 @@
                 <h2 id="secProductsSelection" class="text-base font-bold text-slate-900">2. 产品清单与多套参数配置</h2>
               </div>
               <div class="flex items-center gap-2 no-print">
-                <button id="btnAddCustomRow" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+                <button id="btnAddCustomRow" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition whitespace-nowrap">
                   + 添加自定义设备
                 </button>
-                <button id="btnResetProductParams" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                <button id="btnResetProductParams" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition whitespace-nowrap">
                   恢复默认工时
                 </button>
               </div>
             </div>
 
             <!-- Rule Explanation Pill -->
-            <div class="mt-3 rounded-xl bg-slate-50 border border-slate-200/80 px-3.5 py-2.5 text-xs text-slate-600 flex items-start gap-2">
-              <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="mt-3 rounded-xl bg-slate-50 border border-slate-200/80 px-3.5 py-2 text-xs text-slate-600 flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div id="ruleExplainText">
-                <span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试时间与现场安装调试培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可直接手动修改。
+              <div id="ruleExplainText" class="leading-relaxed">
+                <span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试与现场安装培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。
               </div>
             </div>
 
@@ -293,14 +290,14 @@
             <div class="mt-3 overflow-x-auto custom-scrollbar">
               <table class="w-full text-left border-collapse">
                 <thead>
-                  <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                    <th class="py-2 pr-2" id="thSelect">选用</th>
+                  <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 whitespace-nowrap">
+                    <th class="py-2 pr-2 w-10 text-center" id="thSelect">选用</th>
                     <th class="py-2 px-2" id="thProductName">产品名称</th>
-                    <th class="py-2 px-2 text-center" id="thQty">套数 (套)</th>
-                    <th class="py-2 px-2 text-center" id="thPrep">单套备货 (天)</th>
-                    <th class="py-2 px-2 text-center" id="thTest">单套测试 (天)</th>
-                    <th class="py-2 px-2 text-center" id="thInstall">单套安装培训 (天)</th>
-                    <th class="py-2 pl-2 text-right" id="thSubtotal">小计 (备/测/装)</th>
+                    <th class="py-2 px-2 text-center w-20" id="thQty">套数</th>
+                    <th class="py-2 px-2 text-center w-20" id="thPrep">单套备货</th>
+                    <th class="py-2 px-2 text-center w-20" id="thTest">单套测试</th>
+                    <th class="py-2 px-2 text-center w-24" id="thInstall">单套安装培训</th>
+                    <th class="py-2 pl-2 text-right w-36" id="thSubtotal">小计 (备/测/装)</th>
                   </tr>
                 </thead>
                 <tbody id="projectProductsTbody" class="divide-y divide-slate-100 text-sm">
@@ -312,36 +309,36 @@
           <!-- Aggregated Duration Override Bar -->
           <div class="pt-3 border-t border-slate-200 bg-indigo-50/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <span id="lblAggregatedTitle" class="text-xs font-bold text-slate-800">合算后各阶段总耗时（支持最终手动微调）：</span>
+              <span id="lblAggregatedTitle" class="text-xs font-bold text-slate-800">合算后各阶段总耗时（点击数字可手动微调）：</span>
               <span id="lblManualOverrideStatus" class="text-[11px] text-slate-500">当前为自动合算值</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                <div class="text-[11px] text-slate-500 flex justify-between">
-                  <span id="cardPrepLbl">1. 备货 (取最长)</span>
-                  <span class="text-[10px] font-semibold text-indigo-600">MAX</span>
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
+                  <span id="cardPrepLbl" class="truncate">1. 备货</span>
+                  <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1 rounded">MAX</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
-                  <input id="overridePrepDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-indigo-700 bg-transparent border-b border-dashed border-indigo-300 focus:outline-none focus:border-indigo-600" />
+                  <input id="overridePrepDays" type="number" min="0" max="365" class="w-14 text-base font-bold text-indigo-700 bg-transparent border-b border-dashed border-indigo-300 focus:outline-none focus:border-indigo-600" />
                   <span class="text-xs text-slate-500 day-unit">天</span>
                 </div>
               </div>
 
-              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                <div class="text-[11px] text-slate-500 flex justify-between">
-                  <span id="cardTestLbl">2. 测试 (累加)</span>
-                  <span class="text-[10px] font-semibold text-emerald-600">SUM</span>
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
+                  <span id="cardTestLbl" class="truncate">2. 测试</span>
+                  <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">SUM</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
-                  <input id="overrideTestDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-emerald-700 bg-transparent border-b border-dashed border-emerald-300 focus:outline-none focus:border-emerald-600" />
+                  <input id="overrideTestDays" type="number" min="0" max="365" class="w-14 text-base font-bold text-emerald-700 bg-transparent border-b border-dashed border-emerald-300 focus:outline-none focus:border-emerald-600" />
                   <span class="text-xs text-slate-500 day-unit">天</span>
                 </div>
               </div>
 
-              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                <div class="text-[11px] text-slate-500 flex justify-between">
-                  <span id="cardShipLbl">3. 船运时间</span>
-                  <span class="text-[10px] font-semibold text-sky-600">SEA</span>
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
+                  <span id="cardShipLbl" class="truncate">3. 船运</span>
+                  <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-1 rounded">SEA</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
                   <span id="summaryShipDays" class="text-base font-bold text-sky-700">25</span>
@@ -349,21 +346,21 @@
                 </div>
               </div>
 
-              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
-                <div class="text-[11px] text-slate-500 flex justify-between">
-                  <span id="cardInstallLbl">4. 安装培训 (累加)</span>
-                  <span class="text-[10px] font-semibold text-violet-600">SUM</span>
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
+                  <span id="cardInstallLbl" class="truncate">4. 安装培训</span>
+                  <span class="text-[10px] font-bold text-violet-600 bg-violet-50 px-1 rounded">SUM</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
-                  <input id="overrideInstallDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-violet-700 bg-transparent border-b border-dashed border-violet-300 focus:outline-none focus:border-violet-600" />
+                  <input id="overrideInstallDays" type="number" min="0" max="365" class="w-14 text-base font-bold text-violet-700 bg-transparent border-b border-dashed border-violet-300 focus:outline-none focus:border-violet-600" />
                   <span class="text-xs text-slate-500 day-unit">天</span>
                 </div>
               </div>
 
-              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs col-span-2 sm:col-span-1">
-                <div class="text-[11px] text-slate-500 flex justify-between">
-                  <span id="cardTravelLbl">5. 差旅来回</span>
-                  <span class="text-[10px] font-semibold text-amber-600">TRIP</span>
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+                <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
+                  <span id="cardTravelLbl" class="truncate">5. 差旅来回</span>
+                  <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-1 rounded">TRIP</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
                   <span id="summaryTravelDays" class="text-base font-bold text-amber-700">2</span>
@@ -417,7 +414,7 @@
           <div class="flex flex-wrap items-center gap-2 no-print">
             <!-- Toggle Sub-product Breakdown -->
             <label class="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2.5 py-1.5 rounded-lg cursor-pointer select-none">
-              <input id="chkShowSubtasks" type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500" />
+              <input id="chkShowSubtasks" type="checkbox" class="rounded text-indigo-600 focus:ring-indigo-500" />
               <span id="lblShowSubtasks">展开各产品分项明细</span>
             </label>
 
@@ -447,29 +444,39 @@
           </div>
         </div>
 
-        <!-- Visual Gantt Chart Container -->
-        <div class="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-xs">
+        <!-- Visual Gantt Chart Container (Semantic Table + Proportional Timeline) -->
+        <div class="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm">
           <div class="overflow-x-auto custom-scrollbar">
-            <div class="min-w-[1160px]">
-              <!-- Blue Table Header Row -->
-              <div class="grid grid-cols-24 bg-[#0b5ed7] text-white border-b border-blue-800 text-xs font-semibold items-center select-none">
-                <div class="col-span-3 py-3 px-3 border-r border-blue-400/40 truncate" id="ganttColCategory">阶段分类</div>
-                <div class="col-span-5 py-3 px-3 border-r border-blue-400/40 truncate" id="ganttColTask">任务名称</div>
-                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColOwner">负责人</div>
-                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColPriority">优先级</div>
-                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColProcessing">进度状态</div>
-                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColStart">开始日期</div>
-                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColEnd">结束日期</div>
-                <div class="col-span-1 py-3 px-1 border-r border-blue-400/40 text-center truncate" id="ganttColDuration">天数</div>
-                <div class="col-span-5 py-1.5 px-3 bg-slate-900 text-slate-100 flex flex-col justify-between" id="ganttTimelineHeader">
-                  <!-- Populated dynamically with date ticks -->
-                </div>
-              </div>
-
-              <!-- Gantt Rows Container -->
-              <div id="ganttRowsContainer" class="divide-y divide-slate-200 bg-white">
-              </div>
-            </div>
+            <table class="w-full min-w-[1280px] table-fixed border-collapse text-xs select-none">
+              <colgroup>
+                <col class="w-[116px]" />
+                <col class="w-[224px]" />
+                <col class="w-[96px]" />
+                <col class="w-[74px]" />
+                <col class="w-[88px]" />
+                <col class="w-[96px]" />
+                <col class="w-[96px]" />
+                <col class="w-[68px]" />
+                <col class="w-[422px]" />
+              </colgroup>
+              <thead>
+                <tr class="bg-[#0b5ed7] text-white border-b border-blue-800 font-semibold">
+                  <th class="py-3 px-3 text-left border-r border-blue-400/40 whitespace-nowrap" id="ganttColCategory">阶段分类</th>
+                  <th class="py-3 px-3 text-left border-r border-blue-400/40 whitespace-nowrap" id="ganttColTask">任务名称</th>
+                  <th class="py-3 px-2 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColOwner">负责人</th>
+                  <th class="py-3 px-1.5 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColPriority">优先级</th>
+                  <th class="py-3 px-1.5 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColProcessing">进度状态</th>
+                  <th class="py-3 px-2 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColStart">开始日期</th>
+                  <th class="py-3 px-2 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColEnd">结束日期</th>
+                  <th class="py-3 px-1.5 text-center border-r border-blue-400/40 whitespace-nowrap" id="ganttColDuration">预计天数</th>
+                  <th class="py-1.5 px-3 bg-[#094bb0] text-white align-middle" id="ganttTimelineHeader">
+                    <!-- Populated dynamically with readable date ticks -->
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="ganttRowsContainer" class="divide-y divide-slate-200 bg-white">
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -680,40 +687,7 @@
 
   </main>
 
-  <!-- Cloudflare Deployment Modal -->
-  <div id="modalDeploy" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">CF</span>
-          <h3 id="modalDeployTitle" class="text-base font-bold text-slate-900">如何将此网页部署到 Cloudflare Pages</h3>
-        </div>
-        <button id="btnCloseDeployModal" type="button" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
-      </div>
-      <div id="modalDeployBody" class="text-xs sm:text-sm text-slate-600 space-y-3 leading-relaxed">
-        <p class="font-medium text-slate-800">方案 B（Cloudflare Pages + KV 多人实时共享与管理员维护版）部署仅需 3 步：</p>
-        <ol class="list-decimal list-inside space-y-2">
-          <li><strong>创建 KV 数据库</strong>：登录 Cloudflare Dashboard → <strong>Storage & Databases → KV</strong> → 点击 Create a namespace，名称填 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600 font-mono">GANTT_KV_STORE</code>。</li>
-          <li><strong>上传项目部署包</strong>：进入 <strong>Workers & Pages → Create → Pages → Upload assets</strong>，上传为您打包好的部署文件夹（内含 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono">index.html</code> 与 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono">functions/api/data.js</code>）。</li>
-          <li><strong>绑定 KV 变量</strong>：在 Pages 项目 <strong>Settings → Functions → KV namespace bindings</strong> 中添加绑定，变量名填 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600 font-mono">GANTT_KV</code>，选择刚才创建的命名空间并重新部署即可实现全员实时共享！</li>
-        </ol>
-        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500">
-          💡 数据持久化说明：您在「常规产品默认表」和「各国船运与差旅总表」中修改的数据会自动保存在浏览器的 LocalStorage 中；如需修改全员打开时的初始默认值，只需直接修改本 HTML 源码中的 <code class="font-mono text-slate-700">DEFAULT_CATALOG_PRODUCTS</code> 和 <code class="font-mono text-slate-700">DEFAULT_SHIPPING_TABLE</code> 数组即可。
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
-        <button id="btnDownloadBakedHtml" type="button" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-1.5 shadow-xs">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          <span>下载已固化最新总表数据的 index.html</span>
-        </button>
-        <button id="btnConfirmDeployModal" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800">
-          我知道了 / Got it
-        </button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Admin Authentication Modal -->
   <div id="modalAdminAuth" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
@@ -858,7 +832,7 @@
         lblProjectName: '项目名称 / 客户名称',
         defaultProjectName: '海外旗舰店开业交付项目',
         lblCalcMode: '排期推算方式',
-        optBackward: '按开业/交付节点倒推 (推荐)',
+        optBackward: '按开业/交付节点倒推',
         optForward: '按启动/下单日期正推',
         lblAnchorDateBackward: '目标开业 / 交付完成日期',
         lblAnchorDateForward: '计划启动备货 / 下单日期',
@@ -866,30 +840,30 @@
         btnJumpShippingTable: '管理国家总表 →',
         lblShippingDays: '船运时间 (天)',
         badgeShippingEditable: '可手动修改',
-        lblTravelDays: '工程师来回时间 (天)',
+        lblTravelDays: '差旅来回 (天)',
         badgeAsia: '亚洲默认 2 天',
         badgeLongHaul: '欧美澳默认 4-5 天',
         lblTravelMode: '工程师来回时间排期呈现方式',
-        optTravelSplit: '拆分为「工程师去程」+「安装调试培训」+「工程师返程」(总来回天数拆分)',
-        optTravelBefore: '合并为「工程师差旅往返」阶段，在开业/交付节点前全部完成',
+        optTravelSplit: '拆分为「工程师去程」+「安装调试培训」+「工程师返程」',
+        optTravelBefore: '合并为「工程师差旅往返」阶段，在交付前完成',
         secProductsSelection: '2. 产品清单与多套参数配置',
         btnAddCustomRow: '+ 添加自定义设备',
         btnResetProductParams: '恢复默认工时',
         ruleExplainHtml: '<span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试时间与现场安装调试培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。',
         thSelect: '选用',
-        thProductName: '产品名称 (中/英)',
-        thQty: '套数 (套)',
-        thPrep: '单套备货 (天)',
-        thTest: '单套测试 (天)',
-        thInstall: '单套安装培训 (天)',
-        thSubtotal: '该项合算 (备/测/装)',
+        thProductName: '产品名称',
+        thQty: '套数',
+        thPrep: '单套备货',
+        thTest: '单套测试',
+        thInstall: '单套安装培训',
+        thSubtotal: '小计 (备/测/装)',
         lblAggregatedTitle: '合算后各阶段总耗时（点击数字可手动微调）：',
         statusAuto: '当前为根据产品套数自动合算值',
         statusManual: '已手动微调阶段天数（点击右侧「重置排期」可恢复自动合算）',
-        cardPrepLbl: '1. 备货 (取最长)',
-        cardTestLbl: '2. 测试 (累加)',
-        cardShipLbl: '3. 船运时间',
-        cardInstallLbl: '4. 安装培训 (累加)',
+        cardPrepLbl: '1. 备货',
+        cardTestLbl: '2. 测试',
+        cardShipLbl: '3. 船运',
+        cardInstallLbl: '4. 安装培训',
         cardTravelLbl: '5. 差旅来回',
         dayUnit: '天',
         kpiStartLabel: '最晚启动备货日期 (起点)',
@@ -1004,15 +978,15 @@
         lblProjectName: 'Project / Client Name',
         defaultProjectName: 'Overseas Flagship Store Launch',
         lblCalcMode: 'Calculation Direction',
-        optBackward: 'Backward from Opening/Handover Date (Default)',
+        optBackward: 'Backward from Handover Date',
         optForward: 'Forward from Order/Start Date',
         lblAnchorDateBackward: 'Target Opening / Handover Date',
         lblAnchorDateForward: 'Planned Order / Prep Start Date',
         lblCountry: 'Destination Country (Auto-fills Freight & Travel)',
         btnJumpShippingTable: 'Edit Country Table →',
-        lblShippingDays: 'Sea Freight Time (Days)',
+        lblShippingDays: 'Sea Freight (Days)',
         badgeShippingEditable: 'Editable',
-        lblTravelDays: 'Engineer Round-Trip (Days)',
+        lblTravelDays: 'Round-Trip (Days)',
         badgeAsia: 'Asia Default: 2d',
         badgeLongHaul: 'Americas/EU/AU: 4-5d',
         lblTravelMode: 'Engineer Travel Timeline Mode',
@@ -1024,19 +998,19 @@
         ruleExplainHtml: '<span class="font-semibold text-slate-800">Multi-Set Rules:</span> Prep time takes the <span class="text-indigo-600 font-semibold">LONGEST (MAX)</span> since production starts in parallel; Factory Testing and On-Site Installation & Training <span class="text-emerald-700 font-semibold">ACCUMULATE (SUM)</span> across sets. Any field can be edited manually.',
         thSelect: 'Use',
         thProductName: 'Product Name',
-        thQty: 'Sets (Qty)',
-        thPrep: 'Prep / Set (d)',
-        thTest: 'Test / Set (d)',
-        thInstall: 'Install & Train / Set (d)',
-        thSubtotal: 'Sub (Prep/Test/Inst)',
+        thQty: 'Sets',
+        thPrep: 'Prep (d)',
+        thTest: 'Test (d)',
+        thInstall: 'Install (d)',
+        thSubtotal: 'Subtotal (P/T/I)',
         lblAggregatedTitle: 'Consolidated Phase Durations (Click numbers to override):',
         statusAuto: 'Auto-calculated from selected product sets',
         statusManual: 'Manual override active (Click "Reset All" to restore auto-calc)',
-        cardPrepLbl: '1. Prep (MAX)',
-        cardTestLbl: '2. Testing (SUM)',
-        cardShipLbl: '3. Sea Freight',
-        cardInstallLbl: '4. Install & Train (SUM)',
-        cardTravelLbl: '5. Eng. Travel',
+        cardPrepLbl: '1. Prep',
+        cardTestLbl: '2. Testing',
+        cardShipLbl: '3. Freight',
+        cardInstallLbl: '4. Install',
+        cardTravelLbl: '5. Travel',
         dayUnit: 'd',
         kpiStartLabel: 'Latest Prep Start Date',
         kpiShipDateLabel: 'Est. Vessel Departure Date',
@@ -1323,6 +1297,51 @@
       }
     ];
 
+    function getOrAssignDeviceOperator() {
+      const DEVICE_OP_KEY = 'gantt_device_operator_v2';
+      try {
+        const existing = localStorage.getItem(DEVICE_OP_KEY);
+        if (existing && existing.trim()) {
+          return existing.trim();
+        }
+      } catch (e) {}
+
+      const ua = navigator.userAgent || '';
+      let osTag = 'PC';
+      if (/iPhone/i.test(ua)) osTag = 'iPhone';
+      else if (/iPad/i.test(ua)) osTag = 'iPad';
+      else if (/Android/i.test(ua)) osTag = 'Android';
+      else if (/Mac/i.test(ua)) osTag = 'Mac';
+      else if (/Win/i.test(ua)) osTag = 'Win';
+      else if (/Linux/i.test(ua)) osTag = 'Linux';
+
+      let brTag = 'Web';
+      if (/Edg\//i.test(ua)) brTag = 'Edge';
+      else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) brTag = 'Chrome';
+      else if (/Firefox\//i.test(ua)) brTag = 'Firefox';
+      else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) brTag = 'Safari';
+
+      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+      let code = '';
+      for (let i = 0; i < 3; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      const assigned = `${osTag}-${brTag}-${code}`;
+      try {
+        localStorage.setItem(DEVICE_OP_KEY, assigned);
+      } catch (e) {}
+      return assigned;
+    }
+
+    function saveDeviceOperator(name) {
+      const clean = (name || '').trim();
+      if (!clean) return;
+      try {
+        localStorage.setItem('gantt_device_operator_v2', clean);
+      } catch (e) {}
+    }
+
     const savedCatalog = loadStorage('gantt_catalog_products_v1', DEFAULT_CATALOG_PRODUCTS);
     const savedShipping = loadStorage('gantt_shipping_table_v1', DEFAULT_SHIPPING_TABLE);
     const savedProjects = loadStorage('gantt_shared_projects_v1', DEFAULT_SHARED_PROJECTS);
@@ -1341,7 +1360,7 @@
       shippingDays: (savedWorkspace && typeof savedWorkspace.shippingDays === 'number') ? savedWorkspace.shippingDays : Number(defaultCountry.shippingDays),
       travelDays: (savedWorkspace && typeof savedWorkspace.travelDays === 'number') ? savedWorkspace.travelDays : Number(defaultCountry.travelDays),
       travelMode: (savedWorkspace && savedWorkspace.travelMode) ? savedWorkspace.travelMode : 'split',
-      showSubtasks: (savedWorkspace && typeof savedWorkspace.showSubtasks === 'boolean') ? savedWorkspace.showSubtasks : true,
+      showSubtasks: (savedWorkspace && typeof savedWorkspace.showSubtasksV2 === 'boolean') ? savedWorkspace.showSubtasksV2 : false,
       manualOverride: (savedWorkspace && savedWorkspace.manualOverride) ? savedWorkspace.manualOverride : {
         prep: null,
         test: null,
@@ -1366,7 +1385,7 @@
       },
       isAdmin: false,
       adminPin: 'admin888',
-      operatorName: (savedWorkspace && savedWorkspace.operatorName) ? savedWorkspace.operatorName : '张工',
+      operatorName: getOrAssignDeviceOperator(),
       currentProjectId: (savedWorkspace && savedWorkspace.currentProjectId) ? savedWorkspace.currentProjectId : null,
       kvConnected: false,
       catalogProducts: savedCatalog,
@@ -1388,7 +1407,7 @@
         shippingDays: state.shippingDays,
         travelDays: state.travelDays,
         travelMode: state.travelMode,
-        showSubtasks: state.showSubtasks,
+        showSubtasksV2: state.showSubtasks,
         manualOverride: state.manualOverride,
         taskMeta: state.taskMeta,
         projectItems: state.projectItems
@@ -1792,7 +1811,7 @@
         endDate: addDays(projectStartDate, hwEnd),
         colorClass: 'bg-violet-600',
         badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
-        subtasks: instSubtasks
+        subtasks: []
       });
       cursor = hwEnd;
 
@@ -1980,11 +1999,11 @@
       if (state.isAdmin) {
         adminDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
         adminLbl.textContent = d.adminUnlockedBtn;
-        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/30 transition flex items-center gap-1.5';
+        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/30 transition flex items-center gap-1.5 whitespace-nowrap shrink-0';
       } else {
         adminDot.className = 'w-2 h-2 rounded-full bg-slate-400';
         adminLbl.textContent = d.adminLoginBtn;
-        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5';
+        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5 whitespace-nowrap shrink-0';
       }
 
       // Update banners in Products & Shipping views
@@ -2111,32 +2130,33 @@
         const subPrep = q > 0 ? item.prepDays : 0;
         const subTest = q * item.testDays;
         const subInst = q * item.installDays;
+        const activeField = state.lang === 'zh' ? 'nameZh' : 'nameEn';
+        const activeVal = state.lang === 'zh' ? item.nameZh : item.nameEn;
 
         tr.innerHTML = `
-          <td class="py-2.5 pr-2">
+          <td class="py-2 pr-2 text-center">
             <input type="checkbox" data-idx="${idx}" class="item-chk w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" ${item.selected ? 'checked' : ''} />
           </td>
-          <td class="py-2.5 px-2">
-            <div class="flex flex-col gap-1">
-              <input type="text" data-idx="${idx}" data-name-field="${state.lang === 'zh' ? 'nameZh' : 'nameEn'}" value="${state.lang === 'zh' ? item.nameZh : item.nameEn}" placeholder="${state.lang === 'zh' ? '输入设备中文名' : 'Equipment Name'}" class="item-name-inp w-full min-w-[120px] rounded border ${item.catalogId ? 'border-transparent hover:border-slate-300 focus:border-indigo-500 bg-transparent focus:bg-white' : 'border-emerald-300 bg-emerald-50/30 focus:bg-white focus:border-indigo-500'} px-1.5 py-0.5 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none transition" />
-              <input type="text" data-idx="${idx}" data-name-field="${state.lang === 'zh' ? 'nameEn' : 'nameZh'}" value="${state.lang === 'zh' ? item.nameEn : item.nameZh}" placeholder="${state.lang === 'zh' ? 'English Name (选填)' : '中文名称 (Optional)'}" class="item-name-inp w-full min-w-[120px] rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent focus:bg-white px-1.5 py-0.5 text-[11px] text-slate-400 focus:text-slate-700 focus:outline-none transition" />
-            </div>
+          <td class="py-2 px-2">
+            <input type="text" data-idx="${idx}" data-name-field="${activeField}" value="${activeVal}" placeholder="${state.lang === 'zh' ? '输入设备名称' : 'Equipment Name'}" class="item-name-inp w-full min-w-[120px] rounded-lg border ${item.catalogId ? 'border-transparent hover:border-slate-300 focus:border-indigo-500 bg-transparent focus:bg-white' : 'border-emerald-300 bg-emerald-50/40 focus:bg-white focus:border-indigo-500'} px-2 py-1 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" />
           </td>
-          <td class="py-2.5 px-2 text-center">
-            <input type="number" min="0" max="99" step="1" data-idx="${idx}" data-field="qty" value="${item.qty}" class="item-num w-16 text-center rounded-lg border border-slate-300 py-1 px-1.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          <td class="py-2 px-2 text-center">
+            <input type="number" min="0" max="99" step="1" data-idx="${idx}" data-field="qty" value="${item.qty}" class="item-num w-14 text-center rounded-lg border border-slate-300 py-1 px-1 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </td>
-          <td class="py-2.5 px-2 text-center">
-            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="prepDays" value="${item.prepDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          <td class="py-2 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="prepDays" value="${item.prepDays}" class="item-num w-14 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </td>
-          <td class="py-2.5 px-2 text-center">
-            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="testDays" value="${item.testDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          <td class="py-2 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="testDays" value="${item.testDays}" class="item-num w-14 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </td>
-          <td class="py-2.5 px-2 text-center">
-            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="installDays" value="${item.installDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          <td class="py-2 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="installDays" value="${item.installDays}" class="item-num w-14 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
           </td>
-          <td class="py-2.5 pl-2 text-right font-mono text-xs">
-            <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${subPrep}d</span> /
-            <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${subTest}d</span> /
+          <td class="py-2 pl-2 text-right font-mono text-xs whitespace-nowrap">
+            <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${subPrep}d</span>
+            <span class="text-slate-300">/</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${subTest}d</span>
+            <span class="text-slate-300">/</span>
             <span class="px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">${subInst}d</span>
           </td>
         `;
@@ -2173,7 +2193,6 @@
           }
           clearManualOverrides();
           updateCalculationsAndGantt();
-          // Also update row subtotal badges without losing input focus
           const row = e.target.closest('tr');
           if (row) {
             const it = state.projectItems[i];
@@ -2181,8 +2200,10 @@
             const lastTd = row.querySelector('td:last-child');
             if (lastTd) {
               lastTd.innerHTML = `
-                <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${q > 0 ? it.prepDays : 0}d</span> /
-                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${q * it.testDays}d</span> /
+                <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${q > 0 ? it.prepDays : 0}d</span>
+                <span class="text-slate-300">/</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${q * it.testDays}d</span>
+                <span class="text-slate-300">/</span>
                 <span class="px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">${q * it.installDays}d</span>
               `;
             }
@@ -2268,204 +2289,283 @@
       const headerEl = document.getElementById('ganttTimelineHeader');
       const rowsEl = document.getElementById('ganttRowsContainer');
       const d = I18N[state.lang];
+      const isZh = state.lang === 'zh';
 
       const total = Math.max(1, sched.totalDays);
 
-      // Build 6 evenly spaced date markers across the timeline header
-      const tickCount = 6;
-      let ticksHtml = '<div class="flex justify-between items-center text-[11px] text-slate-600 font-mono">';
+      // Build 6 evenly spaced high-contrast date markers across the blue timeline header
+      const tickCount = 5;
+      let ticksHtml = '<div class="flex justify-between items-center text-[11px] text-white font-mono font-semibold tracking-tight">';
       for (let i = 0; i <= tickCount; i++) {
         const dayOffset = Math.round((i / tickCount) * Math.max(0, total - 1));
         const tickDate = addDays(sched.projectStartDate, dayOffset);
         ticksHtml += `<span>${formatShortDate(tickDate, state.lang)}</span>`;
       }
       ticksHtml += '</div>';
-      ticksHtml += `<div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
-        <span>Day 1 (${formatDateISO(sched.projectStartDate)})</span>
-        <span>Day ${sched.totalDays} (${formatDateISO(sched.projectEndDate)})</span>
+      ticksHtml += `<div class="flex justify-between items-center text-[10px] text-blue-100/90 font-normal mt-0.5 font-mono">
+        <span>${isZh ? '起点' : 'Start'}: ${formatDateISO(sched.projectStartDate)}</span>
+        <span class="px-1.5 py-0.2 rounded bg-blue-950/50 text-blue-100">${isZh ? `共 ${sched.totalDays} 天` : `Total ${sched.totalDays}d`}</span>
+        <span>${isZh ? '终点' : 'End'}: ${formatDateISO(sched.projectEndDate)}</span>
       </div>`;
       headerEl.innerHTML = ticksHtml;
 
       rowsEl.innerHTML = '';
 
       if (sched.activeItems.length === 0) {
-        rowsEl.innerHTML = `<div class="p-8 text-center text-sm text-slate-400">${d.noProductWarning}</div>`;
+        rowsEl.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-sm text-slate-400">${d.noProductWarning}</td></tr>`;
         return;
       }
 
-      sched.phases.forEach((phase, pIdx) => {
-        const leftPct = Math.min(98, Math.max(0, (phase.startOffset / total) * 100)).toFixed(2);
-        const widthPct = Math.max(1.8, ((phase.duration / total) * 100)).toFixed(2);
+      // Flatten rows (including subtasks if toggled on) so we can compute exact category rowspans
+      const displayRows = [];
+      sched.phases.forEach((phase) => {
+        displayRows.push({ kind: 'phase', data: phase });
+        if (state.showSubtasks && phase.subtasks && phase.subtasks.length > 0) {
+          phase.subtasks.forEach((sub) => {
+            displayRows.push({ kind: 'subtask', data: sub, parentCategory: phase.category });
+          });
+        }
+      });
 
-        const isZh = state.lang === 'zh';
-        // Special Row 1: Pink Milestone Row (ETA at Store)
-        if (phase.rowType === 'milestone') {
-          const etaStr = formatDateISO(phase.startDate);
-          const mDiv = document.createElement('div');
-          mDiv.className = 'grid grid-cols-24 items-center bg-slate-100/80 text-xs';
-          mDiv.innerHTML = `
-            <div class="col-span-3 py-2.5 px-3 border-r border-slate-200"></div>
-            <div class="col-span-5 py-2.5 px-3 border-r border-rose-300/60 bg-[#e69999]/85 font-semibold text-slate-900">
-              ${phase.name}
-            </div>
-            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center">-</div>
-            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center">-</div>
-            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center text-[11px] font-semibold text-rose-950">${isZh ? '里程碑节点' : 'Milestone'}</div>
-            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center font-mono font-bold text-slate-900">${etaStr}</div>
-            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center font-mono text-slate-800">${etaStr}</div>
-            <div class="col-span-1 py-2.5 px-1 border-r border-slate-200 text-center font-mono text-slate-500">-</div>
-            <div class="col-span-5 py-2 px-3 relative h-9 flex items-center gantt-grid-bg">
-              <div class="relative w-full h-5 flex items-center">
-                <div class="absolute w-3.5 h-3.5 rotate-45 bg-rose-600 border-2 border-white shadow" style="left: calc(${leftPct}% - 6px);" title="${phase.name}: ${etaStr}"></div>
+      // Compute rowspan for consecutive rows with the same non-empty category
+      for (let i = 0; i < displayRows.length; i++) {
+        const row = displayRows[i];
+        const cat = row.kind === 'phase' ? (row.data.category || '') : (row.parentCategory || '');
+        row.categoryText = cat;
+        if (!cat) {
+          row.catSpan = 1;
+          continue;
+        }
+        if (i > 0 && displayRows[i - 1].categoryText === cat) {
+          row.catSpan = 0; // covered by previous rowspan
+        } else {
+          let span = 1;
+          while (i + span < displayRows.length && displayRows[i + span].kind !== 'milestone' && (displayRows[i + span].kind === 'phase' ? (displayRows[i + span].data.category || '') : (displayRows[i + span].parentCategory || '')) === cat) {
+            span++;
+          }
+          row.catSpan = span;
+        }
+      }
+
+      // Helper for background vertical grid lines inside each timeline cell
+      const timelineGuidesHtml = `
+        <div class="absolute inset-0 pointer-events-none flex justify-between px-3">
+          <div class="h-full border-l border-slate-200/70"></div>
+          <div class="h-full border-l border-dashed border-slate-200/70"></div>
+          <div class="h-full border-l border-dashed border-slate-200/70"></div>
+          <div class="h-full border-l border-dashed border-slate-200/70"></div>
+          <div class="h-full border-l border-dashed border-slate-200/70"></div>
+          <div class="h-full border-l border-slate-200/70"></div>
+        </div>
+      `;
+
+      let phaseRowCounter = 0;
+
+      displayRows.forEach((item) => {
+        if (item.kind === 'subtask') {
+          const sub = item.data;
+          const subLeftNum = Math.min(96, Math.max(0, (sub.startOffset / total) * 100));
+          const subWidthNum = Math.max(1.5, ((sub.duration / total) * 100));
+          const subStartStr = sub.duration > 0 ? formatDateISO(sub.startDate) : '-';
+          const subEndStr = sub.duration > 0 ? formatDateISO(sub.endDate) : '-';
+          const subDateStr = sub.duration > 0 ? `${subStartStr} → ${subEndStr}` : '-';
+          const showInside = subWidthNum >= 10;
+
+          const tr = document.createElement('tr');
+          tr.className = 'bg-slate-50/90 text-[11px] text-slate-500 border-b border-slate-200/70';
+
+          let catCellHtml = '';
+          if (item.catSpan > 0) {
+            catCellHtml = `<td rowspan="${item.catSpan}" class="py-2.5 px-3 border-r border-slate-200 font-bold text-slate-800 bg-slate-50/60 align-middle">${item.categoryText}</td>`;
+          }
+
+          tr.innerHTML = `
+            ${catCellHtml}
+            <td class="py-1.5 pl-5 pr-2 border-r border-slate-200 truncate text-slate-600" title="${sub.name}">
+              ${sub.name}
+            </td>
+            <td class="py-1.5 px-2 border-r border-slate-200 text-center text-[11px] text-slate-500 truncate">
+              ${sub.owner || ''}
+            </td>
+            <td class="py-1.5 px-1.5 border-r border-slate-200 text-center text-[10px] text-slate-400">-</td>
+            <td class="py-1.5 px-1.5 border-r border-slate-200 text-center text-[10px] text-slate-400">${isZh ? '分项明细' : 'Subtask'}</td>
+            <td class="py-1.5 px-2 border-r border-slate-200 text-center font-mono text-[11px] text-slate-500">${subStartStr}</td>
+            <td class="py-1.5 px-2 border-r border-slate-200 text-center font-mono text-[11px] text-slate-500">${subEndStr}</td>
+            <td class="py-1.5 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">${sub.duration}</td>
+            <td class="py-1.5 px-3 relative align-middle bg-slate-50/50">
+              ${timelineGuidesHtml}
+              <div class="relative w-full h-4 flex items-center">
+                <div
+                  class="absolute h-3.5 rounded ${sub.colorClass} text-white text-[9px] font-semibold flex items-center justify-center shadow-2xs"
+                  style="left: ${subLeftNum.toFixed(2)}%; width: ${subWidthNum.toFixed(2)}%;"
+                  title="${sub.name}: ${subDateStr}"
+                >
+                  ${showInside ? `${sub.duration}${d.dayUnit}` : ''}
+                </div>
+                ${!showInside ? `<span class="absolute text-[9px] font-mono text-slate-500 whitespace-nowrap" style="left: calc(${(subLeftNum + subWidthNum).toFixed(2)}% + 4px);">${sub.duration}${d.dayUnit}</span>` : ''}
               </div>
-            </div>
+            </td>
           `;
-          rowsEl.appendChild(mDiv);
+          rowsEl.appendChild(tr);
           return;
         }
 
-        // Special Row 2: Site Ready Red Text Rows
+        const phase = item.data;
+        const leftNum = Math.min(96, Math.max(0, (phase.startOffset / total) * 100));
+        const widthNum = Math.max(1.8, ((phase.duration / total) * 100));
+        const leftPct = leftNum.toFixed(2);
+        const widthPct = widthNum.toFixed(2);
+
+        // Special Row 1: Milestone Row (ETA at Store)
+        if (phase.rowType === 'milestone') {
+          const etaStr = formatDateISO(phase.startDate);
+          const tr = document.createElement('tr');
+          tr.className = 'bg-rose-50/70 border-y border-rose-200 text-xs';
+          const badgeLeft = Math.min(82, Math.max(2, leftNum));
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 border-r border-rose-200/80 bg-slate-100/70 text-center text-[11px] font-semibold text-slate-500">
+              ${isZh ? '关键节点' : 'Milestone'}
+            </td>
+            <td class="py-2.5 px-3 border-r border-rose-300/70 bg-[#eab3b3]/75 font-bold text-rose-950 truncate" title="${phase.name}">
+              🚩 ${phase.name}
+            </td>
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center text-rose-900 font-medium">-</td>
+            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center text-rose-900 font-medium">-</td>
+            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-700 text-white whitespace-nowrap">${isZh ? '里程碑' : 'Milestone'}</span>
+            </td>
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center font-mono font-bold text-rose-950">${etaStr}</td>
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center font-mono font-bold text-rose-950">${etaStr}</td>
+            <td class="py-2.5 px-1.5 border-r border-rose-200/80 bg-slate-100/70 text-center font-mono text-slate-500">0</td>
+            <td class="py-2 px-3 relative align-middle bg-rose-50/40">
+              ${timelineGuidesHtml}
+              <div class="relative w-full h-6 flex items-center">
+                <div class="absolute top-0 bottom-0 border-l-2 border-rose-500" style="left: ${leftPct}%;"></div>
+                <div class="absolute w-3.5 h-3.5 rotate-45 bg-rose-600 border-2 border-white shadow-sm" style="left: calc(${leftPct}% - 7px);" title="${phase.name}: ${etaStr}"></div>
+                <span class="absolute px-1.5 py-0.5 rounded bg-rose-600 text-white font-mono text-[10px] font-bold shadow-2xs whitespace-nowrap" style="left: calc(${badgeLeft.toFixed(2)}% + 8px);">
+                  ETA ${formatShortDate(phase.startDate, state.lang)}
+                </span>
+              </div>
+            </td>
+          `;
+          rowsEl.appendChild(tr);
+          return;
+        }
+
+        // Special Row 2: Site Ready Rows (Customer site preparation before ETA)
         if (phase.rowType === 'site_ready') {
-          const sDiv = document.createElement('div');
-          sDiv.className = 'grid grid-cols-24 items-center bg-white hover:bg-red-50/20 transition text-xs';
-          sDiv.innerHTML = `
-            <div class="col-span-3 py-2.5 px-3 border-r border-slate-200 font-semibold text-red-600 truncate">
-              ${phase.category}
-            </div>
-            <div class="col-span-5 py-2.5 px-3 border-r border-slate-200 font-medium text-red-600 truncate" title="${phase.name}">
+          const tr = document.createElement('tr');
+          tr.className = 'bg-white hover:bg-red-50/25 transition text-xs border-b border-slate-200';
+          let catCellHtml = '';
+          if (item.catSpan > 0) {
+            catCellHtml = `<td rowspan="${item.catSpan}" class="py-2.5 px-3 border-r border-slate-200 font-bold text-red-600 bg-red-50/30 align-middle">${item.categoryText}</td>`;
+          }
+          const deadlineWidth = Math.min(96, Math.max(12, leftNum)).toFixed(2);
+          tr.innerHTML = `
+            ${catCellHtml}
+            <td class="py-2.5 px-3 border-r border-slate-200 font-semibold text-red-600 truncate" title="${phase.name}">
               ${phase.name}
-            </div>
-            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center text-xs text-slate-800">
+            </td>
+            <td class="py-2 px-2 border-r border-slate-200 text-center text-xs text-slate-700 truncate">
               ${phase.owner}
-            </div>
-            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
-              <span class="px-2 py-0.5 rounded bg-red-50 text-red-600 text-[11px] font-semibold">${isZh ? '紧急' : 'Critical'}</span>
-            </div>
-            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
-              <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+            </td>
+            <td class="py-2 px-1.5 border-r border-slate-200 text-center">
+              <span class="px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200 text-[11px] font-semibold whitespace-nowrap">${isZh ? '紧急' : 'Critical'}</span>
+            </td>
+            <td class="py-2 px-1.5 border-r border-slate-200 text-center">
+              <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
                 <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待就绪' : 'Pending'}</option>
                 <option value="Ready" ${phase.processing === 'Ready' ? 'selected' : ''}>${isZh ? '已就绪' : 'Ready'}</option>
               </select>
-            </div>
-            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
-              <input type="text" data-meta-key="${phase.key}" data-meta-field="startDate" value="${phase.customStartStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white rounded px-1 py-0.5 font-mono text-[11px]" />
-            </div>
-            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
-              <input type="text" data-meta-key="${phase.key}" data-meta-field="endDate" value="${phase.customEndStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white rounded px-1 py-0.5 font-mono text-[11px]" />
-            </div>
-            <div class="col-span-1 py-2 px-1 border-r border-slate-200 text-center font-mono text-[11px] text-slate-500">
+            </td>
+            <td class="py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
+              <input type="text" data-meta-key="${phase.key}" data-meta-field="startDate" value="${phase.customStartStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent hover:border-slate-200 focus:border-indigo-500 rounded px-1 py-0.5 font-mono text-[11px] focus:outline-none" />
+            </td>
+            <td class="py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
+              <input type="text" data-meta-key="${phase.key}" data-meta-field="endDate" value="${phase.customEndStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white border border-transparent hover:border-slate-200 focus:border-indigo-500 rounded px-1 py-0.5 font-mono text-[11px] focus:outline-none" />
+            </td>
+            <td class="py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-400">
               -
-            </div>
-            <div class="col-span-5 py-2 px-3 relative h-10 flex items-center gantt-grid-bg text-[11px] text-red-500 font-medium">
-              <span class="truncate">${isZh ? `需在 ${formatDateISO(phase.startDate)} 前就绪` : `Ready before ${formatDateISO(phase.startDate)}`}</span>
-            </div>
+            </td>
+            <td class="py-2 px-3 relative align-middle">
+              ${timelineGuidesHtml}
+              <div class="relative w-full h-6 flex items-center">
+                <div class="h-5 rounded border border-dashed border-red-300 bg-red-50/80 px-2 flex items-center justify-end text-[10px] font-medium text-red-600 truncate" style="width: ${deadlineWidth}%;">
+                  <span class="truncate">${isZh ? `需在 ${formatShortDate(phase.startDate, 'zh')} 前完成场地准备` : `Ready before ${formatShortDate(phase.startDate, 'en')}`}</span>
+                </div>
+              </div>
+            </td>
           `;
-          rowsEl.appendChild(sDiv);
+          rowsEl.appendChild(tr);
           return;
         }
 
         // Standard Timed Phase Row
+        phaseRowCounter++;
         const startDateStr = phase.duration > 0 ? formatDateISO(phase.startDate) : '-';
         const endDateStr = phase.duration > 0 ? formatDateISO(phase.endDate) : '-';
         const dateRangeStr = phase.duration > 0 ? `${startDateStr} → ${endDateStr}` : '-';
-        const zebraCls = pIdx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white';
+        const zebraCls = phaseRowCounter % 2 === 0 ? 'bg-slate-50/50' : 'bg-white';
+        const showLabelInside = widthNum >= 9;
+        const labelOutsideOnLeft = (leftNum + widthNum) > 88;
 
-        const rowDiv = document.createElement('div');
-        rowDiv.className = `grid grid-cols-24 items-center ${zebraCls} hover:bg-indigo-50/30 transition text-xs`;
-        rowDiv.innerHTML = `
-          <div class="col-span-3 py-2.5 px-3 border-r border-slate-200 font-semibold text-slate-800 truncate" title="${phase.category}">
-            ${phase.category}
-          </div>
-          <div class="col-span-5 py-2.5 px-3 border-r border-slate-200 font-medium text-slate-900 truncate" title="${phase.name}">
+        let catCellHtml = '';
+        if (item.catSpan > 0) {
+          catCellHtml = `<td rowspan="${item.catSpan}" class="py-2.5 px-3 border-r border-slate-200 font-bold text-slate-800 bg-slate-50/70 align-middle">${item.categoryText}</td>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = `${zebraCls} hover:bg-indigo-50/30 transition text-xs border-b border-slate-200`;
+        tr.innerHTML = `
+          ${catCellHtml}
+          <td class="py-2.5 px-3 border-r border-slate-200 font-medium text-slate-900 truncate" title="${phase.name}">
             ${phase.name}
-          </div>
-          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center text-xs font-medium text-slate-700 truncate">
+          </td>
+          <td class="py-2 px-2 border-r border-slate-200 text-center text-xs font-medium text-slate-700 truncate">
             ${phase.owner || ''}
-          </div>
-          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
-            <select data-meta-key="${phase.key}" data-meta-field="priority" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+          </td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-center">
+            <select data-meta-key="${phase.key}" data-meta-field="priority" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
               <option value="High" ${phase.priority === 'High' ? 'selected' : ''}>${isZh ? '高' : 'High'}</option>
               <option value="Medium" ${phase.priority === 'Medium' ? 'selected' : ''}>${isZh ? '中' : 'Medium'}</option>
               <option value="Low" ${phase.priority === 'Low' ? 'selected' : ''}>${isZh ? '低' : 'Low'}</option>
             </select>
-          </div>
-          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
-            <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+          </td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-center">
+            <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
               <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待开始' : 'Pending'}</option>
               <option value="In Progress" ${phase.processing === 'In Progress' ? 'selected' : ''}>${isZh ? '进行中' : 'In Progress'}</option>
               <option value="Done" ${phase.processing === 'Done' ? 'selected' : ''}>${isZh ? '已完成' : 'Done'}</option>
             </select>
-          </div>
-          <div class="col-span-2 py-2.5 px-1.5 border-r border-slate-200 text-center font-mono text-xs text-slate-800">
+          </td>
+          <td class="py-2.5 px-2 border-r border-slate-200 text-center font-mono text-xs text-slate-800 whitespace-nowrap">
             ${startDateStr}
-          </div>
-          <div class="col-span-2 py-2.5 px-1.5 border-r border-slate-200 text-center font-mono text-xs text-slate-600">
+          </td>
+          <td class="py-2.5 px-2 border-r border-slate-200 text-center font-mono text-xs text-slate-600 whitespace-nowrap">
             ${endDateStr}
-          </div>
-          <div class="col-span-1 py-2 px-1 border-r border-slate-200 text-center">
+          </td>
+          <td class="py-2 px-1.5 border-r border-slate-200 text-center">
             <input type="number" min="0" max="365" data-override-field="${phase.overrideField || ''}" value="${phase.duration}" class="gantt-est-inp w-12 text-center font-mono font-bold text-xs rounded border border-slate-300 bg-white py-0.5 px-1 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-          </div>
-          <div class="col-span-5 py-2 px-3 relative h-10 flex items-center gantt-grid-bg">
-            <div class="relative w-full h-5 bg-slate-200/70 rounded overflow-hidden">
+          </td>
+          <td class="py-2 px-3 relative align-middle">
+            ${timelineGuidesHtml}
+            <div class="relative w-full h-6 bg-slate-100/90 rounded-md flex items-center">
               <div
-                class="absolute top-0 bottom-0 rounded ${phase.colorClass} text-white text-[10px] font-semibold flex items-center justify-center shadow-xs transition-all duration-300 overflow-hidden whitespace-nowrap px-1"
+                class="absolute top-0.5 bottom-0.5 rounded ${phase.colorClass} text-white text-[10px] font-semibold flex items-center justify-center shadow-xs transition-all duration-300 whitespace-nowrap px-1"
                 style="left: ${leftPct}%; width: ${widthPct}%;"
                 title="${phase.name}: ${dateRangeStr} (${phase.duration}${d.dayUnit})"
               >
-                ${phase.duration > 0 ? `${phase.duration}${d.dayUnit}` : ''}
+                ${(phase.duration > 0 && showLabelInside) ? `${phase.duration}${d.dayUnit}` : ''}
               </div>
+              ${(phase.duration > 0 && !showLabelInside) ? (
+                labelOutsideOnLeft
+                  ? `<span class="absolute text-[10px] font-mono font-bold text-slate-700 whitespace-nowrap" style="right: calc(${(100 - leftNum).toFixed(2)}% + 4px);">${phase.duration}${d.dayUnit}</span>`
+                  : `<span class="absolute text-[10px] font-mono font-bold text-slate-700 whitespace-nowrap" style="left: calc(${(leftNum + widthNum).toFixed(2)}% + 4px);">${phase.duration}${d.dayUnit}</span>`
+              ) : ''}
             </div>
-          </div>
+          </td>
         `;
-        rowsEl.appendChild(rowDiv);
-
-        // Render per-product subtasks if toggled on
-        if (state.showSubtasks && phase.subtasks && phase.subtasks.length > 0) {
-          phase.subtasks.forEach(sub => {
-            const subLeft = Math.min(98, Math.max(0, (sub.startOffset / total) * 100)).toFixed(2);
-            const subWidth = Math.max(1.2, ((sub.duration / total) * 100)).toFixed(2);
-            const subStartStr = sub.duration > 0 ? formatDateISO(sub.startDate) : '-';
-            const subEndStr = sub.duration > 0 ? formatDateISO(sub.endDate) : '-';
-            const subDateStr = sub.duration > 0 ? `${subStartStr} → ${subEndStr}` : '-';
-
-            const subDiv = document.createElement('div');
-            subDiv.className = 'grid grid-cols-24 items-center bg-slate-50/90 text-[11px] text-slate-500';
-            subDiv.innerHTML = `
-              <div class="col-span-3 py-1.5 px-3 border-r border-slate-100 text-[10px] text-slate-400 truncate">
-                ${sub.category || ''}
-              </div>
-              <div class="col-span-5 py-1.5 pl-5 pr-2 border-r border-slate-100 truncate" title="${sub.name}">
-                ${sub.name}
-              </div>
-              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center text-[10px]">
-                ${sub.owner || ''}
-              </div>
-              <div class="col-span-2 py-1.5 px-1 border-r border-slate-100 text-center text-[10px]">-</div>
-              <div class="col-span-2 py-1.5 px-1 border-r border-slate-100 text-center text-[10px]">${isZh ? '产品分项' : 'Subtask'}</div>
-              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center font-mono text-[10px]">
-                ${subStartStr}
-              </div>
-              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center font-mono text-[10px]">
-                ${subEndStr}
-              </div>
-              <div class="col-span-1 py-1.5 px-1 border-r border-slate-100 text-center font-mono">
-                ${sub.duration}
-              </div>
-              <div class="col-span-5 py-1 px-3 relative h-7 flex items-center gantt-grid-bg">
-                <div class="relative w-full h-3.5 bg-slate-200/60 rounded overflow-hidden">
-                  <div
-                    class="absolute top-0 bottom-0 rounded ${sub.colorClass} text-white text-[9px] flex items-center justify-center px-1 truncate"
-                    style="left: ${subLeft}%; width: ${subWidth}%;"
-                    title="${sub.name}: ${subDateStr}"
-                  >
-                    ${sub.duration}${d.dayUnit}
-                  </div>
-                </div>
-              </div>
-            `;
-            rowsEl.appendChild(subDiv);
-          });
-        }
+        rowsEl.appendChild(tr);
       });
 
       // Attach listeners for inline Estimated days and metadata edits inside the Gantt table
@@ -3173,10 +3273,10 @@
       Object.keys(deskBtns).forEach(k => {
         if (!deskBtns[k] || !mobBtns[k]) return;
         if (k === tabName) {
-          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow flex items-center gap-1';
+          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow flex items-center gap-1 whitespace-nowrap';
           mobBtns[k].className = 'flex-1 py-1.5 rounded text-xs font-medium text-center bg-indigo-600 text-white';
         } else {
-          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1';
+          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1 whitespace-nowrap';
           mobBtns[k].className = 'flex-1 py-1.5 rounded text-xs font-medium text-center text-slate-300';
         }
       });
@@ -3203,12 +3303,13 @@
       document.getElementById('selectTravelMode').value = state.travelMode;
       document.getElementById('chkShowSubtasks').checked = state.showSubtasks;
 
-      // Operator Name input
+      // Operator Name input (per-browser/device identity persisted in localStorage)
       const opInp = document.getElementById('inputOperatorName');
       if (opInp) {
-        opInp.value = state.operatorName || '张工';
+        opInp.value = state.operatorName;
         opInp.addEventListener('input', (e) => {
           state.operatorName = e.target.value;
+          saveDeviceOperator(state.operatorName);
           saveWorkspaceState();
         });
       }
@@ -3278,11 +3379,7 @@
         renderAll();
       });
 
-      // Deploy guide modal
-      const modalDeploy = document.getElementById('modalDeploy');
-      document.getElementById('btnDeployGuide').addEventListener('click', () => modalDeploy.classList.remove('hidden'));
-      document.getElementById('btnCloseDeployModal').addEventListener('click', () => modalDeploy.classList.add('hidden'));
-      document.getElementById('btnConfirmDeployModal').addEventListener('click', () => modalDeploy.classList.add('hidden'));
+
 
       // Calc mode & Anchor Date
       document.getElementById('selectCalcMode').addEventListener('change', (e) => {
@@ -3572,24 +3669,7 @@
         document.body.removeChild(ta);
       });
 
-      // Download baked index.html with latest catalogProducts and shippingTable as defaults
-      document.getElementById('btnDownloadBakedHtml').addEventListener('click', () => {
-        let htmlSource = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-        const prodJson = JSON.stringify(state.catalogProducts, null, 6);
-        const shipJson = JSON.stringify(state.shippingTable, null, 6);
-        htmlSource = htmlSource.replace(/const DEFAULT_CATALOG_PRODUCTS = \[[\s\S]*?\];/, 'const DEFAULT_CATALOG_PRODUCTS = ' + prodJson + ';');
-        htmlSource = htmlSource.replace(/const DEFAULT_SHIPPING_TABLE = \[[\s\S]*?\];/, 'const DEFAULT_SHIPPING_TABLE = ' + shipJson + ';');
-        const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'index.html';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast(state.lang === 'zh' ? '已导出包含最新默认总表的 index.html！' : 'Exported index.html with latest defaults!');
-      });
+
 
       // Print
       document.getElementById('btnPrint').addEventListener('click', () => {
