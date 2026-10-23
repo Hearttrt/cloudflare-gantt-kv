@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>项目交付与开业倒推甘特图系统 v1.5.0 | Project Delivery Gantt Planner v1.5.0 </title>
+  <title>项目交付与开业倒推甘特图系统 v1.6.0| Project Delivery Gantt Planner v1.6.0 </title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -282,7 +282,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div id="ruleExplainText" class="leading-relaxed">
-                <span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试与现场安装培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。
+                <span class="font-semibold text-slate-800">多套合算规则：</span>备货与厂内测试因均可同步进行，<span class="text-indigo-600 font-semibold">均取最长值 (MAX)</span>；现场安装调试培训时间按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。
               </div>
             </div>
 
@@ -327,7 +327,7 @@
               <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm">
                 <div class="text-[11px] text-slate-500 flex items-center justify-between gap-1 whitespace-nowrap">
                   <span id="cardTestLbl" class="truncate">2. 测试</span>
-                  <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">SUM</span>
+                  <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 rounded">MAX</span>
                 </div>
                 <div class="mt-1 flex items-baseline gap-1">
                   <input id="overrideTestDays" type="number" min="0" max="365" class="w-14 text-base font-bold text-emerald-700 bg-transparent border-b border-dashed border-emerald-300 focus:outline-none focus:border-emerald-600" />
@@ -484,7 +484,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-slate-500">
           <div class="flex flex-wrap items-center gap-4">
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-indigo-500 inline-block"></span><span id="legPrep">备货阶段 (同步取最长)</span></span>
-            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span><span id="legTest">厂内测试 (多套累加)</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span><span id="legTest">厂内测试 (同步取最长)</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500 inline-block"></span><span id="legShip">国际船运 (按目的国)</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span><span id="legTravel">工程师来回差旅 (亚洲2天/欧美澳4-5天)</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-violet-600 inline-block"></span><span id="legInstall">现场安装调试与培训 (多套累加)</span></span>
@@ -849,7 +849,7 @@
         secProductsSelection: '2. 产品清单与多套参数配置',
         btnAddCustomRow: '+ 添加自定义设备',
         btnResetProductParams: '恢复默认工时',
-        ruleExplainHtml: '<span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试时间与现场安装调试培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。',
+        ruleExplainHtml: '<span class="font-semibold text-slate-800">多套合算规则：</span>备货时间与厂内测试因均可同步进行，<span class="text-indigo-600 font-semibold">均取最长值 (MAX)</span>；现场安装调试培训时间按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。',
         thSelect: '选用',
         thProductName: '产品名称',
         thQty: '套数',
@@ -885,13 +885,13 @@
         ganttColEnd: '结束日期',
         ganttColDuration: '预计天数',
         legPrep: '备货阶段 (同步取最长)',
-        legTest: '厂内测试 (多套累加)',
+        legTest: '厂内测试 (同步取最长)',
         legShip: '国际船运 (按目的国)',
         legTravel: '工程师差旅来回 (亚洲2天/欧美澳4-5天)',
         legInstall: '现场安装调试与培训 (多套累加)',
         ganttFootnote: '提示：甘特图按自然日推算，若需预留缓冲期可直接在上方修改备货或船运天数。',
         phasePrep: '① 常规产品备货阶段 (同步备货取最长)',
-        phaseTest: '② 厂内联调与测试阶段 (多套累加)',
+        phaseTest: '② 厂内联调与测试阶段 (同步测试取最长)',
         phaseShip: '③ 国际海运与清关物流',
         phaseTravelOut: '④ 工程师去程差旅',
         phaseTravelAll: '④ 工程师往返差旅 (来回总计)',
@@ -995,7 +995,7 @@
         secProductsSelection: '2. Product Selection & Multi-Set Quantities',
         btnAddCustomRow: '+ Add Custom Equipment',
         btnResetProductParams: 'Reset Default Days',
-        ruleExplainHtml: '<span class="font-semibold text-slate-800">Multi-Set Rules:</span> Prep time takes the <span class="text-indigo-600 font-semibold">LONGEST (MAX)</span> since production starts in parallel; Factory Testing and On-Site Installation & Training <span class="text-emerald-700 font-semibold">ACCUMULATE (SUM)</span> across sets. Any field can be edited manually.',
+        ruleExplainHtml: '<span class="font-semibold text-slate-800">Multi-Set Rules:</span> Stock preparation and factory testing both run in parallel, taking the <span class="text-indigo-600 font-semibold">LONGEST (MAX)</span>; On-Site Installation & Training <span class="text-emerald-700 font-semibold">ACCUMULATES (SUM)</span> across sets. Any field can be edited manually.',
         thSelect: 'Use',
         thProductName: 'Product Name',
         thQty: 'Sets',
@@ -1031,13 +1031,13 @@
         ganttColEnd: 'End Date',
         ganttColDuration: 'Est. Days',
         legPrep: 'Equipment Prep (Parallel MAX)',
-        legTest: 'Factory Testing (Cumulative SUM)',
+        legTest: 'Factory Testing (Parallel MAX)',
         legShip: 'Sea Freight (By Country)',
         legTravel: 'Engineer Travel (Asia 2d / Americas·EU·AU 4-5d)',
         legInstall: 'Installation & Training (Cumulative SUM)',
         ganttFootnote: 'Note: All dates are calendar days inclusive of start and end dates. Edit any value above to add buffer days.',
         phasePrep: '1. Stock Preparation Phase (Parallel MAX)',
-        phaseTest: '2. Factory Integration & Testing (Cumulative)',
+        phaseTest: '2. Factory Integration & Testing (Parallel MAX)',
         phaseShip: '3. International Sea Freight & Customs',
         phaseTravelOut: '4. Engineer Outbound Travel',
         phaseTravelAll: '4. Engineer Round-Trip Travel (Total)',
@@ -1496,7 +1496,7 @@
         const inst = Math.max(0, Number(item.installDays) || 0);
         if (q > 0) {
           if (prep > autoPrep) autoPrep = prep;
-          autoTest += q * test;
+          if (test > autoTest) autoTest = test;
           autoInstall += q * inst;
         }
       });
@@ -1620,32 +1620,31 @@
         cursor = prepEndOffset;
       }
 
-      // 2. Pre-shipment: Pre-shipment System Testing (SUM)
+      // 2. Pre-shipment: Pre-shipment System Testing (MAX)
       const testStartOffset = cursor;
       const testEndOffset = cursor + finalTest;
       const testSubtasks = [];
-      let testSubCursor = testStartOffset;
       activeItems.forEach(item => {
-        const itemTestDays = Math.max(0, Number(item.qty) * Number(item.testDays));
+        const itemTestDays = Math.max(0, Number(item.testDays) || 0);
+        const subEnd = Math.min(testEndOffset, testStartOffset + itemTestDays);
         testSubtasks.push({
           category: catPre,
-          name: dict.subTestPrefix + (isZh ? item.nameZh : item.nameEn) + ` (${item.qty}×${item.testDays}${dict.dayUnit})`,
+          name: dict.subTestPrefix + (isZh ? item.nameZh : item.nameEn) + ` ×${item.qty}`,
           owner: ownTest,
           duration: itemTestDays,
-          startOffset: testSubCursor,
-          endOffset: testSubCursor + itemTestDays,
-          startDate: addDays(projectStartDate, testSubCursor),
-          endDate: addDays(projectStartDate, testSubCursor + itemTestDays),
+          startOffset: testStartOffset,
+          endOffset: subEnd,
+          startDate: addDays(projectStartDate, testStartOffset),
+          endDate: addDays(projectStartDate, subEnd),
           colorClass: 'bg-emerald-400'
         });
-        testSubCursor += itemTestDays;
       });
 
       phases.push({
         key: 'test',
         overrideField: 'test',
         category: catPre,
-        name: isZh ? '发货前系统联调测试（多套累加）' : 'Pre-Shipment System Testing',
+        name: isZh ? '发货前系统联调测试（同步取最长）' : 'Pre-Shipment System Testing',
         owner: (tm.test?.owner && tm.test.owner !== '中控与项目组' && tm.test.owner !== 'CC&PM') ? tm.test.owner : ownTest,
         priority: tm.test?.priority || 'High',
         processing: tm.test?.processing || 'Pending',
@@ -2129,7 +2128,7 @@
 
         const q = Math.max(0, Number(item.qty) || 0);
         const subPrep = q > 0 ? item.prepDays : 0;
-        const subTest = q * item.testDays;
+        const subTest = q > 0 ? item.testDays : 0;
         const subInst = q * item.installDays;
         const activeField = state.lang === 'zh' ? 'nameZh' : 'nameEn';
         const activeVal = state.lang === 'zh' ? item.nameZh : item.nameEn;
@@ -2203,7 +2202,7 @@
               lastTd.innerHTML = `
                 <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${q > 0 ? it.prepDays : 0}d</span>
                 <span class="text-slate-300">/</span>
-                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${q * it.testDays}d</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${q > 0 ? it.testDays : 0}d</span>
                 <span class="text-slate-300">/</span>
                 <span class="px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">${q * it.installDays}d</span>
               `;
