@@ -3,7 +3,7 @@
 ## 包含文件
 - `index.html`: 前端单页应用（支持甘特图倒推、多套设备合算、多人排期共享列表、历史版本回滚、管理员权限锁）
 - `functions/api/data.js`: Cloudflare Pages Functions 后端接口（对接 Cloudflare KV 实现实时多人同步与修改记录存储）
-- `wrangler.toml`: Cloudflare Pages 配置文件
+
 
 ## 部署步骤
 1. 在 Cloudflare Dashboard -> **Storage & Databases -> KV** 创建命名空间 `GANTT_KV_STORE`。
