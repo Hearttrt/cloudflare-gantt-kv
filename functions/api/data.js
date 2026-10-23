@@ -4,7 +4,7 @@
  */
 
 const KV_KEY = 'GANTT_CLOUD_STORE_V1';
-const DEFAULT_ADMIN_PIN = 'admin888';
+const DEFAULT_ADMIN_PIN = '123456';
 
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -48,17 +48,44 @@ export async function onRequestGet(context) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  if (!env.GANTT_KV) {
-    return jsonResponse({
-      ok: false,
-      kvBound: false,
-      error: 'GANTT_KV namespace is not bound yet.'
-    }, 400);
-  }
 
   try {
     const payload = await request.json();
     const action = payload.action;
+
+    // Resolve configured Admin PIN from env.ADMIN_PIN, or fallback to KV store / default
+    let storePin = DEFAULT_ADMIN_PIN;
+    if (env.GANTT_KV) {
+      try {
+        const raw = await env.GANTT_KV.get(KV_KEY);
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s && s.adminPin) storePin = s.adminPin;
+        }
+      } catch (e) {}
+    }
+
+    const configuredPin = String(env.ADMIN_PIN || storePin || DEFAULT_ADMIN_PIN).trim();
+
+    // Action 0: Real-time Admin PIN verification (supports custom ADMIN_PIN env variable)
+    if (action === 'verifyPin') {
+      const inputPin = String(payload.adminPin || '').trim();
+      const match = (inputPin === configuredPin);
+      if (match) {
+        return jsonResponse({ ok: true, valid: true });
+      } else {
+        return jsonResponse({ ok: false, valid: false, error: '管理员密码错误 / Invalid Admin PIN' }, 403);
+      }
+    }
+
+    if (!env.GANTT_KV) {
+      return jsonResponse({
+        ok: false,
+        kvBound: false,
+        error: 'GANTT_KV namespace is not bound yet.'
+      }, 400);
+    }
+
     const operator = (payload.operator || '匿名成员').trim();
     const nowIso = new Date().toISOString();
 
@@ -70,8 +97,6 @@ export async function onRequestPost(context) {
       auditLogs: [],
       adminPin: DEFAULT_ADMIN_PIN
     };
-
-    const configuredPin = env.ADMIN_PIN || store.adminPin || DEFAULT_ADMIN_PIN;
 
     if (action === 'saveProject') {
       const proj = payload.project;
