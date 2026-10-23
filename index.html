@@ -1,0 +1,3608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>项目交付与开业倒推甘特图系统 | Project Delivery Gantt Planner</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .grid-cols-24 {
+      grid-template-columns: repeat(24, minmax(0, 1fr));
+    }
+    .col-span-1 { grid-column: span 1 / span 1; }
+    .col-span-2 { grid-column: span 2 / span 2; }
+    .col-span-3 { grid-column: span 3 / span 3; }
+    .col-span-5 { grid-column: span 5 / span 5; }
+    .gantt-grid-bg {
+      background-size: 40px 100%;
+      background-image: linear-gradient(to right, rgba(226, 232, 240, 0.7) 1px, transparent 1px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #ffffff;
+      }
+      .print-shadow-none {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-inner shrink-0">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+          </svg>
+        </div>
+        <div class="truncate">
+          <h1 id="appTitle" class="text-base sm:text-lg font-bold tracking-tight truncate">项目交付与开业倒推排期系统</h1>
+          <p id="appSubtitle" class="text-xs text-slate-400 truncate hidden sm:block">多套产品自动合算 · 全球船运与差旅总表 · 甘特图可视化</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Controls -->
+      <div class="flex items-center gap-2 sm:gap-3 no-print">
+        <nav class="hidden lg:flex bg-slate-800 p-1 rounded-lg border border-slate-700">
+          <button id="tabBtnPlanner" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow">
+            排期与甘特图
+          </button>
+          <button id="tabBtnHistory" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1">
+            <span id="lblTabHistory">共享历史与修改记录</span>
+            <span id="badgeHistoryCount" class="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-500/30 text-indigo-200">2</span>
+          </button>
+          <button id="tabBtnProducts" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white">
+            常规产品默认表
+          </button>
+          <button id="tabBtnShipping" type="button" class="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white">
+            各国船运与差旅总表
+          </button>
+        </nav>
+
+        <!-- Operator Name Input -->
+        <div class="hidden sm:flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 gap-1.5">
+          <span id="lblOperatorTag" class="text-[11px] text-slate-400">操作人:</span>
+          <input id="inputOperatorName" type="text" value="张工" class="w-16 bg-transparent text-xs font-semibold text-white focus:outline-none border-b border-dashed border-slate-600 focus:border-indigo-400" />
+        </div>
+
+        <!-- Admin Mode Toggle Button -->
+        <button id="btnAdminToggle" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5">
+          <span id="adminStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+          <span id="lblAdminBtn">管理员登录</span>
+        </button>
+
+        <button id="btnDeployGuide" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition flex items-center gap-1.5">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+          <span id="lblDeployBtn" class="hidden sm:inline">Cloudflare 部署说明</span>
+        </button>
+
+        <button id="btnLangToggle" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+          </svg>
+          <span id="lblLangSwitch">EN / 中文</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Tab Bar -->
+    <div class="lg:hidden flex border-t border-slate-800 bg-slate-900/95 px-2 py-1.5 gap-1 no-print">
+      <button id="mobTabPlanner" type="button" class="flex-1 py-1.5 rounded text-xs font-medium text-center bg-indigo-600 text-white">
+        排期甘特图
+      </button>
+      <button id="mobTabHistory" type="button" class="flex-1 py-1.5 rounded text-xs font-medium text-center text-slate-300">
+        共享历史
+      </button>
+      <button id="mobTabProducts" type="button" class="flex-1 py-1.5 rounded text-xs font-medium text-center text-slate-300">
+        产品默认表
+      </button>
+      <button id="mobTabShipping" type="button" class="flex-1 py-1.5 rounded text-xs font-medium text-center text-slate-300">
+        船运差旅表
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- VIEW 1: PLANNER & GANTT CHART -->
+    <section id="viewPlanner" class="space-y-6">
+
+      <!-- Cloud Collaboration & Save Action Bar -->
+      <div class="bg-white rounded-2xl border border-indigo-200/80 shadow-sm p-4 flex flex-wrap items-center justify-between gap-3 no-print">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-2">
+            <span id="cloudSyncBadgeDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span id="lblCloudSyncStatus" class="text-xs font-bold text-slate-800">Cloudflare 云端共享库已就绪</span>
+          </div>
+          <span id="currentEditingBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+            正在编辑：新排期草稿
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 flex-1 sm:flex-initial justify-end">
+          <input id="inputChangeNote" type="text" placeholder="输入本次修改说明（选填，如：客户确认船期20天）" class="w-full sm:w-64 rounded-lg border border-slate-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <button id="btnSaveCloudProject" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span id="lblSaveCloudBtn">保存到云端共享列表</span>
+          </button>
+          <button id="btnSaveAsNewProject" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition">
+            <span id="lblSaveAsNewBtn">另存为新项目</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Overdue / Urgent Alert Banner -->
+      <div id="urgentAlertBanner" class="hidden rounded-xl bg-rose-50 border border-rose-200 p-4 flex items-start gap-3 shadow-sm">
+        <svg class="w-5 h-5 text-rose-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div class="text-xs sm:text-sm text-rose-900 flex-1">
+          <p id="urgentAlertTitle" class="font-semibold">排期预警：倒推启动日期早于今天！</p>
+          <p id="urgentAlertDesc" class="text-rose-700 mt-0.5"></p>
+        </div>
+      </div>
+
+      <!-- Top Configuration Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Project & Destination Settings (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-5 print-shadow-none">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-5 rounded-full bg-indigo-600"></span>
+              <h2 id="secProjectSettings" class="text-base font-bold text-slate-900">1. 项目节点与目的国配置</h2>
+            </div>
+            <button id="btnResetDefaults" type="button" class="text-xs text-slate-500 hover:text-indigo-600 transition flex items-center gap-1 no-print">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span id="lblResetBtn">重置排期</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Project Name -->
+            <div class="sm:col-span-2">
+              <label for="inputProjectName" id="lblProjectName" class="block text-xs font-semibold text-slate-700 mb-1">项目名称 / 客户名称</label>
+              <input id="inputProjectName" type="text" value="海外旗舰店开业交付项目" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+            </div>
+
+            <!-- Calculation Mode -->
+            <div>
+              <label for="selectCalcMode" id="lblCalcMode" class="block text-xs font-semibold text-slate-700 mb-1">排期推算方式</label>
+              <select id="selectCalcMode" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="backward" id="optBackward">按开业/交付节点倒推 (推荐)</option>
+                <option value="forward" id="optForward">按启动/下单日期正推</option>
+              </select>
+            </div>
+
+            <!-- Target / Anchor Date -->
+            <div>
+              <label for="inputAnchorDate" id="lblAnchorDate" class="block text-xs font-semibold text-slate-700 mb-1">目标开业/交付完成日期</label>
+              <input id="inputAnchorDate" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <!-- Destination Country Selector -->
+            <div class="sm:col-span-2">
+              <div class="flex items-center justify-between mb-1">
+                <label for="selectCountry" id="lblCountry" class="block text-xs font-semibold text-slate-700">目的国家/地区 (自动匹配船运与差旅)</label>
+                <button id="btnJumpShippingTable" type="button" class="text-xs text-indigo-600 hover:underline no-print">编辑国家总表 →</button>
+              </div>
+              <select id="selectCountry" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </select>
+            </div>
+
+            <!-- Shipping Days (Manual Override allowed) -->
+            <div>
+              <label for="inputShippingDays" class="block text-xs font-semibold text-slate-700 mb-1">
+                <span id="lblShippingDays">船运时间 (天)</span>
+                <span id="badgeShippingEditable" class="ml-1 text-[10px] font-normal text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">可手动修改</span>
+              </label>
+              <input id="inputShippingDays" type="number" min="0" max="180" step="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+
+            <!-- Engineer Round-Trip Travel Days -->
+            <div>
+              <label for="inputTravelDays" class="block text-xs font-semibold text-slate-700 mb-1">
+                <span id="lblTravelDays">工程师来回时间 (天)</span>
+                <span id="badgeTravelRegion" class="ml-1 text-[10px] font-normal text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">亚洲默认2天</span>
+              </label>
+              <div class="flex gap-1.5">
+                <input id="inputTravelDays" type="number" min="0" max="30" step="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <button id="btnQuickAsia" type="button" title="亚洲2天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">2d</button>
+                <button id="btnQuickLong4" type="button" title="欧美澳4天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">4d</button>
+                <button id="btnQuickLong5" type="button" title="欧美澳5天" class="px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shrink-0 no-print">5d</button>
+              </div>
+            </div>
+
+            <!-- Travel Split Mode -->
+            <div class="sm:col-span-2 pt-1">
+              <label for="selectTravelMode" id="lblTravelMode" class="block text-xs font-semibold text-slate-700 mb-1">工程师来回时间排期呈现方式</label>
+              <select id="selectTravelMode" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="split" id="optTravelSplit">拆分为「工程师去程」+「安装调试培训」+「工程师返程」(总来回天数平分)</option>
+                <option value="before" id="optTravelBefore">合并为「工程师差旅往返」阶段，在开业/交付节点前全部完成</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Product Selection & Multi-Set Configuration (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 flex flex-col justify-between space-y-4 print-shadow-none">
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-5 rounded-full bg-emerald-600"></span>
+                <h2 id="secProductsSelection" class="text-base font-bold text-slate-900">2. 产品清单与多套参数配置</h2>
+              </div>
+              <div class="flex items-center gap-2 no-print">
+                <button id="btnAddCustomRow" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+                  + 添加自定义设备
+                </button>
+                <button id="btnResetProductParams" type="button" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+                  恢复默认工时
+                </button>
+              </div>
+            </div>
+
+            <!-- Rule Explanation Pill -->
+            <div class="mt-3 rounded-xl bg-slate-50 border border-slate-200/80 px-3.5 py-2.5 text-xs text-slate-600 flex items-start gap-2">
+              <svg class="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div id="ruleExplainText">
+                <span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试时间与现场安装调试培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可直接手动修改。
+              </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="mt-3 overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <th class="py-2 pr-2" id="thSelect">选用</th>
+                    <th class="py-2 px-2" id="thProductName">产品名称</th>
+                    <th class="py-2 px-2 text-center" id="thQty">套数 (套)</th>
+                    <th class="py-2 px-2 text-center" id="thPrep">单套备货 (天)</th>
+                    <th class="py-2 px-2 text-center" id="thTest">单套测试 (天)</th>
+                    <th class="py-2 px-2 text-center" id="thInstall">单套安装培训 (天)</th>
+                    <th class="py-2 pl-2 text-right" id="thSubtotal">小计 (备/测/装)</th>
+                  </tr>
+                </thead>
+                <tbody id="projectProductsTbody" class="divide-y divide-slate-100 text-sm">
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Aggregated Duration Override Bar -->
+          <div class="pt-3 border-t border-slate-200 bg-indigo-50/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <span id="lblAggregatedTitle" class="text-xs font-bold text-slate-800">合算后各阶段总耗时（支持最终手动微调）：</span>
+              <span id="lblManualOverrideStatus" class="text-[11px] text-slate-500">当前为自动合算值</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                <div class="text-[11px] text-slate-500 flex justify-between">
+                  <span id="cardPrepLbl">1. 备货 (取最长)</span>
+                  <span class="text-[10px] font-semibold text-indigo-600">MAX</span>
+                </div>
+                <div class="mt-1 flex items-baseline gap-1">
+                  <input id="overridePrepDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-indigo-700 bg-transparent border-b border-dashed border-indigo-300 focus:outline-none focus:border-indigo-600" />
+                  <span class="text-xs text-slate-500 day-unit">天</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                <div class="text-[11px] text-slate-500 flex justify-between">
+                  <span id="cardTestLbl">2. 测试 (累加)</span>
+                  <span class="text-[10px] font-semibold text-emerald-600">SUM</span>
+                </div>
+                <div class="mt-1 flex items-baseline gap-1">
+                  <input id="overrideTestDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-emerald-700 bg-transparent border-b border-dashed border-emerald-300 focus:outline-none focus:border-emerald-600" />
+                  <span class="text-xs text-slate-500 day-unit">天</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                <div class="text-[11px] text-slate-500 flex justify-between">
+                  <span id="cardShipLbl">3. 船运时间</span>
+                  <span class="text-[10px] font-semibold text-sky-600">SEA</span>
+                </div>
+                <div class="mt-1 flex items-baseline gap-1">
+                  <span id="summaryShipDays" class="text-base font-bold text-sky-700">25</span>
+                  <span class="text-xs text-slate-500 day-unit">天</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs">
+                <div class="text-[11px] text-slate-500 flex justify-between">
+                  <span id="cardInstallLbl">4. 安装培训 (累加)</span>
+                  <span class="text-[10px] font-semibold text-violet-600">SUM</span>
+                </div>
+                <div class="mt-1 flex items-baseline gap-1">
+                  <input id="overrideInstallDays" type="number" min="0" max="365" class="w-16 text-base font-bold text-violet-700 bg-transparent border-b border-dashed border-violet-300 focus:outline-none focus:border-violet-600" />
+                  <span class="text-xs text-slate-500 day-unit">天</span>
+                </div>
+              </div>
+
+              <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-2xs col-span-2 sm:col-span-1">
+                <div class="text-[11px] text-slate-500 flex justify-between">
+                  <span id="cardTravelLbl">5. 差旅来回</span>
+                  <span class="text-[10px] font-semibold text-amber-600">TRIP</span>
+                </div>
+                <div class="mt-1 flex items-baseline gap-1">
+                  <span id="summaryTravelDays" class="text-base font-bold text-amber-700">2</span>
+                  <span class="text-xs text-slate-500 day-unit">天</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- KPI Summary Strip -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm print-shadow-none">
+          <div id="kpiStartLabel" class="text-xs font-medium text-slate-500">最晚启动备货日期 (倒推起点)</div>
+          <div id="kpiStartDate" class="text-lg sm:text-xl font-bold text-indigo-600 mt-1">--</div>
+          <div id="kpiStartSub" class="text-[11px] text-slate-400 mt-0.5">--</div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm print-shadow-none">
+          <div id="kpiShipDateLabel" class="text-xs font-medium text-slate-500">预计发货/装船日期</div>
+          <div id="kpiShipDate" class="text-lg sm:text-xl font-bold text-sky-600 mt-1">--</div>
+          <div id="kpiShipSub" class="text-[11px] text-slate-400 mt-0.5">--</div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm print-shadow-none">
+          <div id="kpiEndLabel" class="text-xs font-medium text-slate-500">开业 / 最终交付完成日期</div>
+          <div id="kpiEndDate" class="text-lg sm:text-xl font-bold text-emerald-600 mt-1">--</div>
+          <div id="kpiEndSub" class="text-[11px] text-slate-400 mt-0.5">--</div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm print-shadow-none">
+          <div id="kpiTotalDaysLabel" class="text-xs font-medium text-slate-500">项目全周期总历时</div>
+          <div class="flex items-baseline gap-1.5 mt-1">
+            <span id="kpiTotalDays" class="text-lg sm:text-xl font-bold text-slate-900">0</span>
+            <span class="text-xs font-medium text-slate-500 day-unit">天</span>
+          </div>
+          <div id="kpiTotalBreakdown" class="text-[11px] text-slate-400 mt-0.5 truncate">--</div>
+        </div>
+      </div>
+
+      <!-- GANTT CHART & TIMELINE SECTION -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4 print-shadow-none">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-5 rounded-full bg-sky-600"></span>
+            <h2 id="secGanttTitle" class="text-base font-bold text-slate-900">3. 项目排期甘特图与阶段起止时间表</h2>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <!-- Toggle Sub-product Breakdown -->
+            <label class="inline-flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-2.5 py-1.5 rounded-lg cursor-pointer select-none">
+              <input id="chkShowSubtasks" type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500" />
+              <span id="lblShowSubtasks">展开各产品分项明细</span>
+            </label>
+
+            <!-- Export CSV -->
+            <button id="btnExportCsv" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span id="lblExportCsv">导出 CSV</span>
+            </button>
+
+            <!-- Copy Schedule Text -->
+            <button id="btnCopySummary" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+              </svg>
+              <span id="lblCopySummary">复制排期文本</span>
+            </button>
+
+            <!-- Print / PDF -->
+            <button id="btnPrint" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white transition flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span id="lblPrint">打印 / 导出PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Gantt Chart Container -->
+        <div class="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-xs">
+          <div class="overflow-x-auto custom-scrollbar">
+            <div class="min-w-[1160px]">
+              <!-- Blue Table Header Row -->
+              <div class="grid grid-cols-24 bg-[#0b5ed7] text-white border-b border-blue-800 text-xs font-semibold items-center select-none">
+                <div class="col-span-3 py-3 px-3 border-r border-blue-400/40 truncate" id="ganttColCategory">阶段分类</div>
+                <div class="col-span-5 py-3 px-3 border-r border-blue-400/40 truncate" id="ganttColTask">任务名称</div>
+                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColOwner">负责人</div>
+                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColPriority">优先级</div>
+                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColProcessing">进度状态</div>
+                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColStart">开始日期</div>
+                <div class="col-span-2 py-3 px-2 border-r border-blue-400/40 text-center truncate" id="ganttColEnd">结束日期</div>
+                <div class="col-span-1 py-3 px-1 border-r border-blue-400/40 text-center truncate" id="ganttColDuration">天数</div>
+                <div class="col-span-5 py-1.5 px-3 bg-slate-900 text-slate-100 flex flex-col justify-between" id="ganttTimelineHeader">
+                  <!-- Populated dynamically with date ticks -->
+                </div>
+              </div>
+
+              <!-- Gantt Rows Container -->
+              <div id="ganttRowsContainer" class="divide-y divide-slate-200 bg-white">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-slate-500">
+          <div class="flex flex-wrap items-center gap-4">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-indigo-500 inline-block"></span><span id="legPrep">备货阶段 (同步取最长)</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span><span id="legTest">厂内测试 (多套累加)</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500 inline-block"></span><span id="legShip">国际船运 (按目的国)</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500 inline-block"></span><span id="legTravel">工程师来回差旅 (亚洲2天/欧美澳4-5天)</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-violet-600 inline-block"></span><span id="legInstall">现场安装调试与培训 (多套累加)</span></span>
+          </div>
+          <div id="ganttFootnote" class="text-[11px] text-slate-400">
+            提示：所有阶段日期均为连续自然日历天，包含起止当天。
+          </div>
+        </div>
+      </div>
+
+      <!-- Embedded Multi-User Shared Project History List on Planner Page -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-5 rounded-full bg-amber-500"></span>
+            <h2 id="secQuickHistoryTitle" class="text-base font-bold text-slate-900">4. 多人实时共享排期历史列表（点击可加载查看/修改/查版本记录）</h2>
+          </div>
+          <button id="btnJumpFullHistory" type="button" class="text-xs font-medium text-indigo-600 hover:underline">
+            查看全部修改审计日志 →
+          </button>
+        </div>
+        <div id="quickSharedProjectsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        </div>
+      </div>
+
+    </section>
+
+    <!-- VIEW 4: SHARED HISTORY & MODIFICATION AUDIT LOGS -->
+    <section id="viewHistory" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 id="histViewTitle" class="text-lg font-bold text-slate-900">云端多人共享排期列表与历史版本库</h2>
+            <p id="histViewDesc" class="text-xs text-slate-500 mt-0.5">所有团队成员保存的排期方案均默认同步在 Cloudflare KV 中，支持多人随时加载查看、二次修改并保留完整历史版本快照。</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="inputSearchProjects" type="text" placeholder="搜索项目名称或国家..." class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <button id="btnRefreshCloud" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition">
+              ↻ 刷新云端数据
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                <th class="py-3 px-3" id="histThProj">项目名称 / 版本</th>
+                <th class="py-3 px-3" id="histThCountry">目的国家与船期/差旅</th>
+                <th class="py-3 px-3" id="histThItems">配置设备清单</th>
+                <th class="py-3 px-3 text-center" id="histThDates">排期起止 (总天数)</th>
+                <th class="py-3 px-3" id="histThUpdated">最后修改人 / 时间 / 备注</th>
+                <th class="py-3 px-3 text-right" id="histThActions">操作</th>
+              </tr>
+            </thead>
+            <tbody id="sharedProjectsTbody" class="divide-y divide-slate-100 text-sm">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modification Audit Log Card -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 id="auditLogTitle" class="text-base font-bold text-slate-900">全站修改记录流水（项目排期变更 + 管理员总表维护记录）</h3>
+            <p id="auditLogDesc" class="text-xs text-slate-500 mt-0.5">自动记录每一次多人排期保存、版本更新以及管理员对船期、国家、产品默认工时的修改操作。</p>
+          </div>
+          <select id="filterAuditType" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white">
+            <option value="ALL">全部记录 / All Logs</option>
+            <option value="project">排期方案变更 / Project Edits</option>
+            <option value="admin">管理员总表维护 / Admin Updates</option>
+          </select>
+        </div>
+
+        <div class="overflow-x-auto max-h-96 custom-scrollbar">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                <th class="py-2.5 px-3" id="logThTime">时间</th>
+                <th class="py-2.5 px-3" id="logThUser">操作人</th>
+                <th class="py-2.5 px-3" id="logThType">类型</th>
+                <th class="py-2.5 px-3" id="logThDetail">修改内容详情</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsTbody" class="divide-y divide-slate-100 text-xs">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: STANDARD PRODUCT CATALOG MANAGER -->
+    <section id="viewProducts" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
+        <!-- Admin Permission Notice Banner -->
+        <div id="adminBannerProducts" class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span id="lblAdminLockNoticeProd">当前为【普通成员只读模式】。维护常规产品默认工时库需要管理员权限。</span>
+          </div>
+          <button id="btnUnlockFromProducts" type="button" class="px-3 py-1 rounded-lg font-semibold bg-amber-600 text-white hover:bg-amber-700 transition">
+            管理员解锁维护
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 id="catProductsTitle" class="text-lg font-bold text-slate-900">常规产品标准工时库 (管理员维护)</h2>
+            <p id="catProductsDesc" class="text-xs text-slate-500 mt-0.5">管理员在此维护常规产品的默认备货、测试、安装调试和培训时间，修改后自动同步至 Cloudflare KV 并记录修改日志。</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnAddCatalogProduct" type="button" class="px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+              + 新增常规产品
+            </button>
+            <button id="btnResetCatalogProducts" type="button" class="px-3 py-2 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+              恢复出厂默认产品库
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                <th class="py-3 px-3" id="catThZh">中文名称</th>
+                <th class="py-3 px-3" id="catThEn">英文名称 (English Name)</th>
+                <th class="py-3 px-3 text-center" id="catThPrep">默认备货 (天)</th>
+                <th class="py-3 px-3 text-center" id="catThTest">默认测试 (天)</th>
+                <th class="py-3 px-3 text-center" id="catThInstall">默认安装调试与培训 (天)</th>
+                <th class="py-3 px-3 text-right" id="catThAction">操作</th>
+              </tr>
+            </thead>
+            <tbody id="catalogProductsTbody" class="divide-y divide-slate-100 text-sm">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SHIPPING & ENGINEER TRAVEL MASTER TABLE -->
+    <section id="viewShipping" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-5">
+        <!-- Admin Permission Notice Banner -->
+        <div id="adminBannerShipping" class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span id="lblAdminLockNoticeShip">当前为【普通成员只读模式】。维护国家、船运时间及差旅默认总表需要管理员权限。</span>
+          </div>
+          <button id="btnUnlockFromShipping" type="button" class="px-3 py-1 rounded-lg font-semibold bg-amber-600 text-white hover:bg-amber-700 transition">
+            管理员解锁维护
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 id="catShippingTitle" class="text-lg font-bold text-slate-900">全球各国船运与工程师来回时间总表 (管理员维护)</h2>
+            <p id="catShippingDesc" class="text-xs text-slate-500 mt-0.5">一般亚洲国家工程师来回算 2 天，美洲、澳洲和欧洲国家来回算 4~5 天。管理员修改后实时同步至云端并记录审计日志。</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="filterRegionSelect" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white">
+              <option value="ALL">全部大洲 / All Regions</option>
+              <option value="Asia">亚洲 (Asia - 来回2天)</option>
+              <option value="Europe">欧洲 (Europe - 来回4-5天)</option>
+              <option value="Americas">美洲 (Americas - 来回4-5天)</option>
+              <option value="Oceania">大洋洲/澳洲 (Oceania - 来回4-5天)</option>
+            </select>
+            <button id="btnAddCountryRow" type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+              + 新增国家/港口
+            </button>
+            <button id="btnResetShippingCatalog" type="button" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+              恢复默认船期总表
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                <th class="py-3 px-3" id="shipThRegion">所属区域</th>
+                <th class="py-3 px-3" id="shipThCountryZh">国家/地区 (中文)</th>
+                <th class="py-3 px-3" id="shipThCountryEn">国家/地区 (English)</th>
+                <th class="py-3 px-3 text-center" id="shipThSeaDays">预计船运时间 (天)</th>
+                <th class="py-3 px-3 text-center" id="shipThTravelDays">工程师来回时间 (天)</th>
+                <th class="py-3 px-3" id="shipThNote">参考主要港口 / 备注</th>
+                <th class="py-3 px-3 text-right" id="shipThAction">操作</th>
+              </tr>
+            </thead>
+            <tbody id="shippingCatalogTbody" class="divide-y divide-slate-100 text-sm">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Cloudflare Deployment Modal -->
+  <div id="modalDeploy" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">CF</span>
+          <h3 id="modalDeployTitle" class="text-base font-bold text-slate-900">如何将此网页部署到 Cloudflare Pages</h3>
+        </div>
+        <button id="btnCloseDeployModal" type="button" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+      <div id="modalDeployBody" class="text-xs sm:text-sm text-slate-600 space-y-3 leading-relaxed">
+        <p class="font-medium text-slate-800">方案 B（Cloudflare Pages + KV 多人实时共享与管理员维护版）部署仅需 3 步：</p>
+        <ol class="list-decimal list-inside space-y-2">
+          <li><strong>创建 KV 数据库</strong>：登录 Cloudflare Dashboard → <strong>Storage & Databases → KV</strong> → 点击 Create a namespace，名称填 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600 font-mono">GANTT_KV_STORE</code>。</li>
+          <li><strong>上传项目部署包</strong>：进入 <strong>Workers & Pages → Create → Pages → Upload assets</strong>，上传为您打包好的部署文件夹（内含 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono">index.html</code> 与 <code class="bg-slate-100 px-1.5 py-0.5 rounded font-mono">functions/api/data.js</code>）。</li>
+          <li><strong>绑定 KV 变量</strong>：在 Pages 项目 <strong>Settings → Functions → KV namespace bindings</strong> 中添加绑定，变量名填 <code class="bg-slate-100 px-1.5 py-0.5 rounded text-indigo-600 font-mono">GANTT_KV</code>，选择刚才创建的命名空间并重新部署即可实现全员实时共享！</li>
+        </ol>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500">
+          💡 数据持久化说明：您在「常规产品默认表」和「各国船运与差旅总表」中修改的数据会自动保存在浏览器的 LocalStorage 中；如需修改全员打开时的初始默认值，只需直接修改本 HTML 源码中的 <code class="font-mono text-slate-700">DEFAULT_CATALOG_PRODUCTS</code> 和 <code class="font-mono text-slate-700">DEFAULT_SHIPPING_TABLE</code> 数组即可。
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2">
+        <button id="btnDownloadBakedHtml" type="button" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition flex items-center gap-1.5 shadow-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span>下载已固化最新总表数据的 index.html</span>
+        </button>
+        <button id="btnConfirmDeployModal" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800">
+          我知道了 / Got it
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Authentication Modal -->
+  <div id="modalAdminAuth" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">🔒</span>
+          <h3 id="modalAdminTitle" class="text-base font-bold text-slate-900">管理员身份验证 (维护船期/国家/产品库)</h3>
+        </div>
+        <button id="btnCloseAdminModal" type="button" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+      <div class="space-y-3 text-xs text-slate-600">
+        <p id="modalAdminDesc">解锁管理员模式后，您可以增删改「常规产品默认表」与「各国船运与差旅总表」，并将变更发布至 Cloudflare KV 云端供全员同步使用。</p>
+        <div>
+          <label for="inputAdminPin" class="block font-semibold text-slate-700 mb-1">管理员密码 (Admin PIN)</label>
+          <input id="inputAdminPin" type="password" value="admin888" placeholder="默认密码: admin888" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <p class="text-[11px] text-slate-400 mt-1">提示：初始默认管理员密码为 <code class="bg-slate-100 px-1 py-0.5 rounded text-slate-700 font-mono">admin888</code>（可在 Cloudflare 环境变量 <code class="font-mono">ADMIN_PIN</code> 中自定义）。</p>
+        </div>
+        <p id="adminAuthError" class="hidden text-xs font-semibold text-rose-600">密码不正确，请重试（默认密码 admin888）。</p>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="btnCancelAdminModal" type="button" class="px-4 py-2 rounded-lg text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">
+          取消
+        </button>
+        <button id="btnSubmitAdminPin" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+          解锁管理员权限
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Revision History Modal -->
+  <div id="modalRevisions" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 id="modalRevTitle" class="text-base font-bold text-slate-900">项目排期历史修改记录</h3>
+          <p id="modalRevSubtitle" class="text-xs text-slate-500 mt-0.5">--</p>
+        </div>
+        <button id="btnCloseRevModal" type="button" class="text-slate-400 hover:text-slate-600 p-1">✕</button>
+      </div>
+      <div id="modalRevList" class="space-y-2.5 max-h-96 overflow-y-auto custom-scrollbar pr-1">
+      </div>
+      <div class="flex justify-end pt-2">
+        <button id="btnConfirmRevModal" type="button" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800">
+          关闭窗口
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2 no-print">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toastMsg">操作成功</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. DEFAULT MASTER DATA (Products & Country Shipping/Travel Table)
+    // =========================================================================
+    const CLOUD_API_ENDPOINT = ['/', 'api', '/data'].join('');
+    const DEFAULT_CATALOG_PRODUCTS = [
+      {
+        id: 'quest_arena',
+        nameZh: '次元竞技场',
+        nameEn: 'Quest Arena',
+        prepDays: 30,
+        testDays: 7,
+        installDays: 7
+      },
+      {
+        id: 'super_shooter',
+        nameZh: '超级射手',
+        nameEn: 'Super Shooter',
+        prepDays: 30,
+        testDays: 7,
+        installDays: 7
+      },
+      {
+        id: 'party_drax',
+        nameZh: '梦幻派对',
+        nameEn: 'Party Drax',
+        prepDays: 7,
+        testDays: 1,
+        installDays: 2
+      }
+    ];
+
+    const DEFAULT_SHIPPING_TABLE = [
+      // Asia (Engineer round-trip default: 2 days)
+      { id: 'sg', region: 'Asia', nameZh: '新加坡', nameEn: 'Singapore', shippingDays: 10, travelDays: 2, noteZh: '新加坡港 (直航快船)', noteEn: 'Singapore Port' },
+      { id: 'my', region: 'Asia', nameZh: '马来西亚', nameEn: 'Malaysia', shippingDays: 12, travelDays: 2, noteZh: '巴生港 / 新山', noteEn: 'Port Klang / Johor' },
+      { id: 'th', region: 'Asia', nameZh: '泰国', nameEn: 'Thailand', shippingDays: 12, travelDays: 2, noteZh: '林查班 / 曼谷港', noteEn: 'Laem Chabang / Bangkok' },
+      { id: 'vn', region: 'Asia', nameZh: '越南', nameEn: 'Vietnam', shippingDays: 8, travelDays: 2, noteZh: '海防 / 胡志明港', noteEn: 'Haiphong / Ho Chi Minh' },
+      { id: 'id', region: 'Asia', nameZh: '印度尼西亚', nameEn: 'Indonesia', shippingDays: 15, travelDays: 2, noteZh: '雅加达 / 泗水', noteEn: 'Jakarta / Surabaya' },
+      { id: 'ph', region: 'Asia', nameZh: '菲律宾', nameEn: 'Philippines', shippingDays: 10, travelDays: 2, noteZh: '马尼拉港', noteEn: 'Manila Port' },
+      { id: 'jp', region: 'Asia', nameZh: '日本', nameEn: 'Japan', shippingDays: 7, travelDays: 2, noteZh: '东京 / 横滨 / 大阪', noteEn: 'Tokyo / Osaka' },
+      { id: 'kr', region: 'Asia', nameZh: '韩国', nameEn: 'South Korea', shippingDays: 5, travelDays: 2, noteZh: '釜山 / 仁川港', noteEn: 'Busan / Incheon' },
+      { id: 'ae', region: 'Asia', nameZh: '阿联酋 (迪拜)', nameEn: 'UAE (Dubai)', shippingDays: 22, travelDays: 2, noteZh: '杰贝阿里港', noteEn: 'Jebel Ali Port' },
+      { id: 'sa', region: 'Asia', nameZh: '沙特阿拉伯', nameEn: 'Saudi Arabia', shippingDays: 25, travelDays: 2, noteZh: '吉达 / 达曼港', noteEn: 'Jeddah / Dammam' },
+
+      // Americas (Engineer round-trip default: 4-5 days)
+      { id: 'us_west', region: 'Americas', nameZh: '美国 (美西)', nameEn: 'USA (West Coast)', shippingDays: 20, travelDays: 4, noteZh: '洛杉矶 / 长滩港', noteEn: 'LA / Long Beach' },
+      { id: 'us_east', region: 'Americas', nameZh: '美国 (美东/内陆)', nameEn: 'USA (East Coast)', shippingDays: 32, travelDays: 5, noteZh: '纽约 / 萨凡纳 / 休斯顿', noteEn: 'NY / Savannah / Houston' },
+      { id: 'ca', region: 'Americas', nameZh: '加拿大', nameEn: 'Canada', shippingDays: 24, travelDays: 4, noteZh: '温哥华 / 多伦多', noteEn: 'Vancouver / Toronto' },
+      { id: 'mx', region: 'Americas', nameZh: '墨西哥', nameEn: 'Mexico', shippingDays: 28, travelDays: 5, noteZh: '曼萨尼约港', noteEn: 'Manzanillo Port' },
+      { id: 'br', region: 'Americas', nameZh: '巴西', nameEn: 'Brazil', shippingDays: 40, travelDays: 5, noteZh: '桑托斯港', noteEn: 'Santos Port' },
+      { id: 'cl', region: 'Americas', nameZh: '智利', nameEn: 'Chile', shippingDays: 36, travelDays: 5, noteZh: '瓦尔帕莱索港', noteEn: 'Valparaiso' },
+
+      // Europe (Engineer round-trip default: 4-5 days)
+      { id: 'uk', region: 'Europe', nameZh: '英国', nameEn: 'United Kingdom', shippingDays: 35, travelDays: 4, noteZh: '费利克斯托 / 南安普顿', noteEn: 'Felixstowe / Southampton' },
+      { id: 'de', region: 'Europe', nameZh: '德国', nameEn: 'Germany', shippingDays: 34, travelDays: 4, noteZh: '汉堡 / 不来梅哈芬', noteEn: 'Hamburg' },
+      { id: 'nl', region: 'Europe', nameZh: '荷兰', nameEn: 'Netherlands', shippingDays: 33, travelDays: 4, noteZh: '鹿特丹港', noteEn: 'Rotterdam' },
+      { id: 'fr', region: 'Europe', nameZh: '法国', nameEn: 'France', shippingDays: 34, travelDays: 4, noteZh: '勒阿弗尔 / 马赛', noteEn: 'Le Havre / Marseille' },
+      { id: 'es', region: 'Europe', nameZh: '西班牙', nameEn: 'Spain', shippingDays: 30, travelDays: 4, noteZh: '巴塞罗那 / 瓦伦西亚', noteEn: 'Barcelona / Valencia' },
+      { id: 'it', region: 'Europe', nameZh: '意大利', nameEn: 'Italy', shippingDays: 30, travelDays: 4, noteZh: '热那亚 / 那不勒斯', noteEn: 'Genoa / Naples' },
+
+      // Oceania / Australia (Engineer round-trip default: 4-5 days)
+      { id: 'au_east', region: 'Oceania', nameZh: '澳大利亚 (悉尼/墨尔本)', nameEn: 'Australia (Sydney/Mel)', shippingDays: 18, travelDays: 4, noteZh: '悉尼 / 墨尔本 / 布里斯班', noteEn: 'Sydney / Melbourne' },
+      { id: 'au_west', region: 'Oceania', nameZh: '澳大利亚 (珀斯)', nameEn: 'Australia (Perth)', shippingDays: 22, travelDays: 5, noteZh: '弗里曼特尔港', noteEn: 'Fremantle Port' },
+      { id: 'nz', region: 'Oceania', nameZh: '新西兰', nameEn: 'New Zealand', shippingDays: 24, travelDays: 5, noteZh: '奥克兰港', noteEn: 'Auckland Port' }
+    ];
+
+    // =========================================================================
+    // 2. BILINGUAL I18N DICTIONARY
+    // =========================================================================
+    const I18N = {
+      zh: {
+        appTitle: '项目交付与开业倒推排期系统',
+        appSubtitle: '多套产品自动合算 · 全球船运与差旅总表 · 甘特图可视化',
+        tabBtnPlanner: '排期与甘特图',
+        tabBtnProducts: '常规产品默认表',
+        tabBtnShipping: '各国船运与差旅总表',
+        mobTabPlanner: '排期甘特图',
+        mobTabProducts: '产品默认表',
+        mobTabShipping: '船运差旅表',
+        lblDeployBtn: 'Cloudflare 部署说明',
+        lblLangSwitch: 'English / 英文',
+        secProjectSettings: '1. 项目节点与目的国配置',
+        lblResetBtn: '重置排期',
+        lblProjectName: '项目名称 / 客户名称',
+        defaultProjectName: '海外旗舰店开业交付项目',
+        lblCalcMode: '排期推算方式',
+        optBackward: '按开业/交付节点倒推 (推荐)',
+        optForward: '按启动/下单日期正推',
+        lblAnchorDateBackward: '目标开业 / 交付完成日期',
+        lblAnchorDateForward: '计划启动备货 / 下单日期',
+        lblCountry: '目的国家/地区 (自动匹配船运与差旅)',
+        btnJumpShippingTable: '管理国家总表 →',
+        lblShippingDays: '船运时间 (天)',
+        badgeShippingEditable: '可手动修改',
+        lblTravelDays: '工程师来回时间 (天)',
+        badgeAsia: '亚洲默认 2 天',
+        badgeLongHaul: '欧美澳默认 4-5 天',
+        lblTravelMode: '工程师来回时间排期呈现方式',
+        optTravelSplit: '拆分为「工程师去程」+「安装调试培训」+「工程师返程」(总来回天数拆分)',
+        optTravelBefore: '合并为「工程师差旅往返」阶段，在开业/交付节点前全部完成',
+        secProductsSelection: '2. 产品清单与多套参数配置',
+        btnAddCustomRow: '+ 添加自定义设备',
+        btnResetProductParams: '恢复默认工时',
+        ruleExplainHtml: '<span class="font-semibold text-slate-800">多套合算规则：</span>备货时间因可同步开工<span class="text-indigo-600 font-semibold">取最长值 (MAX)</span>；厂内测试时间与现场安装调试培训时间均按套数<span class="text-emerald-700 font-semibold">累加计算 (SUM)</span>。所有单项天数均可手动修改。',
+        thSelect: '选用',
+        thProductName: '产品名称 (中/英)',
+        thQty: '套数 (套)',
+        thPrep: '单套备货 (天)',
+        thTest: '单套测试 (天)',
+        thInstall: '单套安装培训 (天)',
+        thSubtotal: '该项合算 (备/测/装)',
+        lblAggregatedTitle: '合算后各阶段总耗时（点击数字可手动微调）：',
+        statusAuto: '当前为根据产品套数自动合算值',
+        statusManual: '已手动微调阶段天数（点击右侧「重置排期」可恢复自动合算）',
+        cardPrepLbl: '1. 备货 (取最长)',
+        cardTestLbl: '2. 测试 (累加)',
+        cardShipLbl: '3. 船运时间',
+        cardInstallLbl: '4. 安装培训 (累加)',
+        cardTravelLbl: '5. 差旅来回',
+        dayUnit: '天',
+        kpiStartLabel: '最晚启动备货日期 (起点)',
+        kpiShipDateLabel: '预计装船 / 起运日期',
+        kpiEndLabel: '开业 / 交付完成节点',
+        kpiTotalDaysLabel: '项目全周期总历时',
+        secGanttTitle: '3. 项目排期甘特图与阶段起止时间表',
+        lblShowSubtasks: '展开各产品分项明细',
+        lblExportCsv: '导出 CSV',
+        lblCopySummary: '复制排期文本',
+        lblPrint: '打印 / 导出PDF',
+        ganttColCategory: '阶段分类',
+        ganttColTask: '任务名称',
+        ganttColOwner: '负责人',
+        ganttColPriority: '优先级',
+        ganttColProcessing: '进度状态',
+        ganttColDates: '起止日期 (开始 → 结束)',
+        ganttColStart: '开始日期',
+        ganttColEnd: '结束日期',
+        ganttColDuration: '预计天数',
+        legPrep: '备货阶段 (同步取最长)',
+        legTest: '厂内测试 (多套累加)',
+        legShip: '国际船运 (按目的国)',
+        legTravel: '工程师差旅来回 (亚洲2天/欧美澳4-5天)',
+        legInstall: '现场安装调试与培训 (多套累加)',
+        ganttFootnote: '提示：甘特图按自然日推算，若需预留缓冲期可直接在上方修改备货或船运天数。',
+        phasePrep: '① 常规产品备货阶段 (同步备货取最长)',
+        phaseTest: '② 厂内联调与测试阶段 (多套累加)',
+        phaseShip: '③ 国际海运与清关物流',
+        phaseTravelOut: '④ 工程师去程差旅',
+        phaseTravelAll: '④ 工程师往返差旅 (来回总计)',
+        phaseInstall: '⑤ 现场安装调试与人员培训 (多套累加)',
+        phaseTravelBack: '⑥ 工程师返程差旅',
+        subPrepPrefix: '├─ 备货：',
+        subTestPrefix: '├─ 测试：',
+        subInstallPrefix: '├─ 安装与培训：',
+        urgentAlertTitle: '排期预警：倒推得出的最晚启动备货日期早于今天！',
+        urgentAlertDescTpl: '按当前目标日期倒推，项目本应于 {startDate} 启动备货（距今已逾期 {overdueDays} 天）。建议协调缩短备货/船运周期（如改空运）或顺延开业交付日期。',
+        catProductsTitle: '常规产品标准工时库',
+        catProductsDesc: '在此维护常规产品的默认备货、测试、安装调试和培训时间。修改后将自动保存在浏览器并同步至排期计算器。',
+        btnAddCatalogProduct: '+ 新增常规产品',
+        btnResetCatalogProducts: '恢复出厂默认产品库',
+        catThZh: '中文名称',
+        catThEn: '英文名称 (English Name)',
+        catThPrep: '默认备货 (天)',
+        catThTest: '默认测试 (天)',
+        catThInstall: '默认安装调试与培训 (天)',
+        catThAction: '操作',
+        catShippingTitle: '全球各国船运与工程师来回时间总表',
+        catShippingDesc: '一般亚洲国家工程师来回算 2 天，美洲、澳洲和欧洲国家来回算 4~5 天。所有预计船期与差旅天数均可随时修改或新增。',
+        btnAddCountryRow: '+ 新增国家/港口',
+        btnResetShippingCatalog: '恢复默认船期总表',
+        shipThRegion: '所属区域',
+        shipThCountryZh: '国家/地区 (中文)',
+        shipThCountryEn: '国家/地区 (English)',
+        shipThSeaDays: '预计船运时间 (天)',
+        shipThTravelDays: '工程师来回时间 (天)',
+        shipThNote: '参考主要港口 / 备注',
+        shipThAction: '操作',
+        regionAsia: '亚洲 (Asia)',
+        regionEurope: '欧洲 (Europe)',
+        regionAmericas: '美洲 (Americas)',
+        regionOceania: '大洋洲/澳洲 (Oceania)',
+        btnDelete: '删除',
+        toastCopied: '排期摘要已复制到剪贴板！',
+        toastReset: '已恢复默认排期参数！',
+        toastSaved: '总表数据已更新并同步至云端！',
+        noProductWarning: '请至少勾选 1 款产品且套数大于 0',
+        lblTabHistory: '共享历史与修改记录',
+        lblOperatorTag: '操作人:',
+        adminLoginBtn: '管理员登录',
+        adminUnlockedBtn: '管理员已解锁 (点击锁定)',
+        cloudStatusKv: 'Cloudflare KV 云端实时同步已连接',
+        cloudStatusLocal: '云端共享模式就绪 (支持 CF KV 自动同步)',
+        editingDraft: '当前状态：新建排期草稿',
+        editingExistingTpl: '正在编辑共享项目：{name} (当前 v{ver})',
+        lblSaveCloudBtn: '保存到云端共享列表',
+        lblSaveAsNewBtn: '另存为新项目',
+        secQuickHistoryTitle: '4. 多人实时共享排期历史列表（点击可加载查看/二次修改/查版本记录）',
+        btnJumpFullHistory: '查看全部修改审计日志 →',
+        histViewTitle: '云端多人共享排期列表与历史版本库',
+        histViewDesc: '所有团队成员保存的排期方案均默认同步在 Cloudflare KV 中，支持多人随时加载查看、二次修改并保留完整历史版本快照。',
+        histThProj: '项目名称 / 版本',
+        histThCountry: '目的国家与船期/差旅',
+        histThItems: '配置设备清单',
+        histThDates: '排期起止 (总天数)',
+        histThUpdated: '最后修改人 / 时间 / 备注',
+        histThActions: '操作',
+        auditLogTitle: '全站修改记录流水（项目排期变更 + 管理员总表维护记录）',
+        auditLogDesc: '自动记录每一次多人排期保存、版本更新以及管理员对船期、国家、产品默认工时的修改操作。',
+        logThTime: '时间',
+        logThUser: '操作人',
+        logThType: '类型',
+        logThDetail: '修改内容详情',
+        btnLoadEdit: '加载并修改',
+        btnViewRevs: '修改记录',
+        btnRestoreRev: '回滚到此版本'
+      },
+      en: {
+        appTitle: 'Project Delivery & Backward Gantt Planner',
+        appSubtitle: 'Multi-Set Auto Aggregation · Global Freight & Travel Table · Interactive Gantt',
+        tabBtnPlanner: 'Gantt & Schedule',
+        tabBtnProducts: 'Product Defaults',
+        tabBtnShipping: 'Country Shipping Table',
+        mobTabPlanner: 'Gantt Planner',
+        mobTabProducts: 'Product Catalog',
+        mobTabShipping: 'Shipping Table',
+        lblDeployBtn: 'Cloudflare Guide',
+        lblLangSwitch: '中文 / Chinese',
+        secProjectSettings: '1. Project Milestone & Destination',
+        lblResetBtn: 'Reset All',
+        lblProjectName: 'Project / Client Name',
+        defaultProjectName: 'Overseas Flagship Store Launch',
+        lblCalcMode: 'Calculation Direction',
+        optBackward: 'Backward from Opening/Handover Date (Default)',
+        optForward: 'Forward from Order/Start Date',
+        lblAnchorDateBackward: 'Target Opening / Handover Date',
+        lblAnchorDateForward: 'Planned Order / Prep Start Date',
+        lblCountry: 'Destination Country (Auto-fills Freight & Travel)',
+        btnJumpShippingTable: 'Edit Country Table →',
+        lblShippingDays: 'Sea Freight Time (Days)',
+        badgeShippingEditable: 'Editable',
+        lblTravelDays: 'Engineer Round-Trip (Days)',
+        badgeAsia: 'Asia Default: 2d',
+        badgeLongHaul: 'Americas/EU/AU: 4-5d',
+        lblTravelMode: 'Engineer Travel Timeline Mode',
+        optTravelSplit: 'Split into Outbound Travel + Installation & Training + Return Travel',
+        optTravelBefore: 'Group Round-Trip Travel before Final Handover Milestone',
+        secProductsSelection: '2. Product Selection & Multi-Set Quantities',
+        btnAddCustomRow: '+ Add Custom Equipment',
+        btnResetProductParams: 'Reset Default Days',
+        ruleExplainHtml: '<span class="font-semibold text-slate-800">Multi-Set Rules:</span> Prep time takes the <span class="text-indigo-600 font-semibold">LONGEST (MAX)</span> since production starts in parallel; Factory Testing and On-Site Installation & Training <span class="text-emerald-700 font-semibold">ACCUMULATE (SUM)</span> across sets. Any field can be edited manually.',
+        thSelect: 'Use',
+        thProductName: 'Product Name',
+        thQty: 'Sets (Qty)',
+        thPrep: 'Prep / Set (d)',
+        thTest: 'Test / Set (d)',
+        thInstall: 'Install & Train / Set (d)',
+        thSubtotal: 'Sub (Prep/Test/Inst)',
+        lblAggregatedTitle: 'Consolidated Phase Durations (Click numbers to override):',
+        statusAuto: 'Auto-calculated from selected product sets',
+        statusManual: 'Manual override active (Click "Reset All" to restore auto-calc)',
+        cardPrepLbl: '1. Prep (MAX)',
+        cardTestLbl: '2. Testing (SUM)',
+        cardShipLbl: '3. Sea Freight',
+        cardInstallLbl: '4. Install & Train (SUM)',
+        cardTravelLbl: '5. Eng. Travel',
+        dayUnit: 'd',
+        kpiStartLabel: 'Latest Prep Start Date',
+        kpiShipDateLabel: 'Est. Vessel Departure Date',
+        kpiEndLabel: 'Opening / Handover Date',
+        kpiTotalDaysLabel: 'Total Project Duration',
+        secGanttTitle: '3. Project Gantt Chart & Phase Schedule',
+        lblShowSubtasks: 'Show Per-Product Subtasks',
+        lblExportCsv: 'Export CSV',
+        lblCopySummary: 'Copy Summary',
+        lblPrint: 'Print / Save PDF',
+        ganttColCategory: 'Category',
+        ganttColTask: 'Task',
+        ganttColOwner: 'Owner',
+        ganttColPriority: 'Priority',
+        ganttColProcessing: 'Processing',
+        ganttColDates: 'Start → End Date',
+        ganttColStart: 'Start Date',
+        ganttColEnd: 'End Date',
+        ganttColDuration: 'Estimated',
+        legPrep: 'Prep Phase (Parallel MAX)',
+        legTest: 'Factory Testing (Cumulative SUM)',
+        legShip: 'Sea Freight (By Country)',
+        legTravel: 'Engineer Round-Trip (Asia 2d / EU·US·AU 4-5d)',
+        legInstall: 'Install, Commissioning & Training (SUM)',
+        ganttFootnote: 'Note: All dates are calendar days inclusive of start and end dates. Edit any value above to add buffer days.',
+        phasePrep: '1. Stock Preparation Phase (Parallel MAX)',
+        phaseTest: '2. Factory Integration & Testing (Cumulative)',
+        phaseShip: '3. International Sea Freight & Customs',
+        phaseTravelOut: '4. Engineer Outbound Travel',
+        phaseTravelAll: '4. Engineer Round-Trip Travel (Total)',
+        phaseInstall: '5. On-Site Installation & Training (Cumulative)',
+        phaseTravelBack: '6. Engineer Return Travel',
+        subPrepPrefix: '├─ Prep: ',
+        subTestPrefix: '├─ Test: ',
+        subInstallPrefix: '├─ Install & Train: ',
+        urgentAlertTitle: 'Schedule Warning: Backward-Calculated Start Date Has Passed!',
+        urgentAlertDescTpl: 'To meet the target date, stock preparation needed to start on {startDate} ({overdueDays} days ago). Consider expediting production/shipping or adjusting the opening date.',
+        catProductsTitle: 'Standard Product Default Duration Catalog',
+        catProductsDesc: 'Manage default preparation, factory testing, and installation & training days for standard products. Saved automatically in browser.',
+        btnAddCatalogProduct: '+ Add Standard Product',
+        btnResetCatalogProducts: 'Restore Factory Defaults',
+        catThZh: 'Chinese Name',
+        catThEn: 'English Name',
+        catThPrep: 'Default Prep (d)',
+        catThTest: 'Default Test (d)',
+        catThInstall: 'Default Install & Train (d)',
+        catThAction: 'Action',
+        catShippingTitle: 'Global Country Sea Freight & Engineer Travel Master Table',
+        catShippingDesc: 'Asian countries default to 2 days engineer round-trip; Americas, Oceania, and Europe default to 4–5 days. Fully customizable.',
+        btnAddCountryRow: '+ Add Country / Port',
+        btnResetShippingCatalog: 'Restore Default Table',
+        shipThRegion: 'Region',
+        shipThCountryZh: 'Country (Chinese)',
+        shipThCountryEn: 'Country (English)',
+        shipThSeaDays: 'Est. Sea Freight (d)',
+        shipThTravelDays: 'Eng. Round-Trip (d)',
+        shipThNote: 'Main Ports / Notes',
+        shipThAction: 'Action',
+        regionAsia: 'Asia (2d Trip)',
+        regionEurope: 'Europe (4-5d Trip)',
+        regionAmericas: 'Americas (4-5d Trip)',
+        regionOceania: 'Oceania/AU (4-5d Trip)',
+        btnDelete: 'Delete',
+        toastCopied: 'Schedule summary copied to clipboard!',
+        toastReset: 'Schedule reset to default values!',
+        toastSaved: 'Master catalog updated and synced!',
+        noProductWarning: 'Please select at least 1 product with quantity > 0',
+        lblTabHistory: 'Shared History & Logs',
+        lblOperatorTag: 'User:',
+        adminLoginBtn: 'Admin Login',
+        adminUnlockedBtn: 'Admin Unlocked (Click to Lock)',
+        cloudStatusKv: 'Cloudflare KV Real-Time Sync Connected',
+        cloudStatusLocal: 'Cloud Share Ready (Auto-syncs with CF KV)',
+        editingDraft: 'Status: New Schedule Draft',
+        editingExistingTpl: 'Editing Shared Project: {name} (v{ver})',
+        lblSaveCloudBtn: 'Save to Shared Cloud',
+        lblSaveAsNewBtn: 'Save as New',
+        secQuickHistoryTitle: '4. Shared Project Schedules (Click to Load, Edit, or View Revisions)',
+        btnJumpFullHistory: 'View Full Audit Logs →',
+        histViewTitle: 'Cloud Shared Project Schedules & Revision History',
+        histViewDesc: 'All schedules saved by team members sync to Cloudflare KV with full multi-version snapshots and rollback support.',
+        histThProj: 'Project / Version',
+        histThCountry: 'Destination & Sea/Trip',
+        histThItems: 'Equipment List',
+        histThDates: 'Start → End (Total)',
+        histThUpdated: 'Last Editor / Time / Note',
+        histThActions: 'Actions',
+        auditLogTitle: 'Global Modification Audit Log (Project Revisions + Admin Table Updates)',
+        auditLogDesc: 'Tracks every schedule save, version update, and admin change to shipping times, countries, and product defaults.',
+        logThTime: 'Timestamp',
+        logThUser: 'Operator',
+        logThType: 'Category',
+        logThDetail: 'Modification Details',
+        btnLoadEdit: 'Load & Edit',
+        btnViewRevs: 'History',
+        btnRestoreRev: 'Restore Version'
+      }
+    };
+
+    // =========================================================================
+    // 3. APPLICATION STATE & STORAGE HELPERS
+    // =========================================================================
+    function loadStorage(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return JSON.parse(JSON.stringify(fallback));
+        return JSON.parse(raw);
+      } catch (e) {
+        return JSON.parse(JSON.stringify(fallback));
+      }
+    }
+
+    function saveStorage(key, data) {
+      try {
+        localStorage.setItem(key, JSON.stringify(data));
+      } catch (e) {
+        // Ignore storage errors in restricted iframes
+      }
+    }
+
+    // Default target date: 90 days from today so backward schedule looks clean out-of-the-box
+    function getDefaultAnchorDateStr() {
+      const d = new Date();
+      d.setDate(d.getDate() + 90);
+      return formatDateISO(d);
+    }
+
+    const DEFAULT_SHARED_PROJECTS = [
+      {
+        id: 'proj_demo_us_la',
+        projectName: '洛杉矶旗舰店开业交付项目 (LA Flagship)',
+        version: 2,
+        updatedAt: '2026-10-22T09:30:00.000Z',
+        updatedBy: '张工',
+        calcMode: 'backward',
+        anchorDate: '2027-01-20',
+        selectedCountryId: 'us_west',
+        shippingDays: 20,
+        travelDays: 4,
+        travelMode: 'split',
+        manualOverride: { prep: null, test: null, install: null },
+        startDateStr: '2026-11-11',
+        endDateStr: '2027-01-20',
+        totalDays: 71,
+        projectItems: [
+          { uid: 'item_quest_arena_0', catalogId: 'quest_arena', selected: true, qty: 1, nameZh: '次元竞技场', nameEn: 'Quest Arena', prepDays: 30, testDays: 7, installDays: 7 },
+          { uid: 'item_super_shooter_1', catalogId: 'super_shooter', selected: true, qty: 1, nameZh: '超级射手', nameEn: 'Super Shooter', prepDays: 30, testDays: 7, installDays: 7 },
+          { uid: 'item_party_drax_2', catalogId: 'party_drax', selected: true, qty: 1, nameZh: '梦幻派对', nameEn: 'Party Drax', prepDays: 7, testDays: 1, installDays: 2 }
+        ],
+        revisions: [
+          {
+            revId: 'rev_la_2',
+            version: 2,
+            timestamp: '2026-10-22T09:30:00.000Z',
+            operator: '张工',
+            noteZh: '客户确认追加1套梦幻派对，美西快船20天，差旅来回4天',
+            noteEn: 'Added 1x Party Drax, confirmed US West 20d sea freight & 4d travel',
+            snapshot: {
+              projectName: '洛杉矶旗舰店开业交付项目 (LA Flagship)',
+              calcMode: 'backward',
+              anchorDate: '2027-01-20',
+              selectedCountryId: 'us_west',
+              shippingDays: 20,
+              travelDays: 4,
+              travelMode: 'split',
+              manualOverride: { prep: null, test: null, install: null },
+              startDateStr: '2026-11-11',
+              endDateStr: '2027-01-20',
+              totalDays: 71,
+              projectItems: [
+                { uid: 'item_quest_arena_0', catalogId: 'quest_arena', selected: true, qty: 1, nameZh: '次元竞技场', nameEn: 'Quest Arena', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_super_shooter_1', catalogId: 'super_shooter', selected: true, qty: 1, nameZh: '超级射手', nameEn: 'Super Shooter', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_party_drax_2', catalogId: 'party_drax', selected: true, qty: 1, nameZh: '梦幻派对', nameEn: 'Party Drax', prepDays: 7, testDays: 1, installDays: 2 }
+              ]
+            }
+          },
+          {
+            revId: 'rev_la_1',
+            version: 1,
+            timestamp: '2026-10-21T14:15:00.000Z',
+            operator: '李经理',
+            noteZh: '初始创建排期：次元竞技场×1 + 超级射手×1',
+            noteEn: 'Initial schedule: Quest Arena x1 + Super Shooter x1',
+            snapshot: {
+              projectName: '洛杉矶旗舰店开业交付项目 (LA Flagship)',
+              calcMode: 'backward',
+              anchorDate: '2027-01-20',
+              selectedCountryId: 'us_west',
+              shippingDays: 20,
+              travelDays: 4,
+              travelMode: 'split',
+              manualOverride: { prep: null, test: null, install: null },
+              startDateStr: '2026-11-14',
+              endDateStr: '2027-01-20',
+              totalDays: 68,
+              projectItems: [
+                { uid: 'item_quest_arena_0', catalogId: 'quest_arena', selected: true, qty: 1, nameZh: '次元竞技场', nameEn: 'Quest Arena', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_super_shooter_1', catalogId: 'super_shooter', selected: true, qty: 1, nameZh: '超级射手', nameEn: 'Super Shooter', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_party_drax_2', catalogId: 'party_drax', selected: false, qty: 0, nameZh: '梦幻派对', nameEn: 'Party Drax', prepDays: 7, testDays: 1, installDays: 2 }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: 'proj_demo_sg',
+        projectName: '新加坡圣淘沙体验中心 (Sentosa Hub)',
+        version: 1,
+        updatedAt: '2026-10-21T18:20:00.000Z',
+        updatedBy: '王工',
+        calcMode: 'backward',
+        anchorDate: '2026-12-25',
+        selectedCountryId: 'sg',
+        shippingDays: 10,
+        travelDays: 2,
+        travelMode: 'split',
+        manualOverride: { prep: null, test: null, install: null },
+        startDateStr: '2026-10-27',
+        endDateStr: '2026-12-25',
+        totalDays: 60,
+        projectItems: [
+          { uid: 'item_quest_arena_0', catalogId: 'quest_arena', selected: true, qty: 1, nameZh: '次元竞技场', nameEn: 'Quest Arena', prepDays: 30, testDays: 7, installDays: 7 },
+          { uid: 'item_super_shooter_1', catalogId: 'super_shooter', selected: false, qty: 0, nameZh: '超级射手', nameEn: 'Super Shooter', prepDays: 30, testDays: 7, installDays: 7 },
+          { uid: 'item_party_drax_2', catalogId: 'party_drax', selected: true, qty: 2, nameZh: '梦幻派对', nameEn: 'Party Drax', prepDays: 7, testDays: 1, installDays: 2 }
+        ],
+        revisions: [
+          {
+            revId: 'rev_sg_1',
+            version: 1,
+            timestamp: '2026-10-21T18:20:00.000Z',
+            operator: '王工',
+            noteZh: '圣诞节开业倒推：新加坡船期10天，亚洲工程师来回2天，次元竞技场×1 + 梦幻派对×2',
+            noteEn: 'Christmas launch backward schedule: SG 10d sea, 2d Asia trip',
+            snapshot: {
+              projectName: '新加坡圣淘沙体验中心 (Sentosa Hub)',
+              calcMode: 'backward',
+              anchorDate: '2026-12-25',
+              selectedCountryId: 'sg',
+              shippingDays: 10,
+              travelDays: 2,
+              travelMode: 'split',
+              manualOverride: { prep: null, test: null, install: null },
+              startDateStr: '2026-10-27',
+              endDateStr: '2026-12-25',
+              totalDays: 60,
+              projectItems: [
+                { uid: 'item_quest_arena_0', catalogId: 'quest_arena', selected: true, qty: 1, nameZh: '次元竞技场', nameEn: 'Quest Arena', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_super_shooter_1', catalogId: 'super_shooter', selected: false, qty: 0, nameZh: '超级射手', nameEn: 'Super Shooter', prepDays: 30, testDays: 7, installDays: 7 },
+                { uid: 'item_party_drax_2', catalogId: 'party_drax', selected: true, qty: 2, nameZh: '梦幻派对', nameEn: 'Party Drax', prepDays: 7, testDays: 1, installDays: 2 }
+              ]
+            }
+          }
+        ]
+      }
+    ];
+
+    const DEFAULT_AUDIT_LOGS = [
+      {
+        id: 'log_init_3',
+        timestamp: '2026-10-22T09:30:00.000Z',
+        operator: '张工',
+        category: 'project',
+        targetName: '洛杉矶旗舰店开业交付项目 (LA Flagship)',
+        detailZh: '更新排期 (v2)：客户确认追加1套梦幻派对，美西快船20天（2026-11-11 → 2027-01-20，共71天）',
+        detailEn: 'Updated Schedule (v2): Added 1x Party Drax, US West 20d sea freight (2026-11-11 → 2027-01-20, 71d)'
+      },
+      {
+        id: 'log_init_2',
+        timestamp: '2026-10-21T18:20:00.000Z',
+        operator: '王工',
+        category: 'project',
+        targetName: '新加坡圣淘沙体验中心 (Sentosa Hub)',
+        detailZh: '新建共享排期 (v1)：圣诞节开业倒推，新加坡船期10天，来回2天（2026-10-27 → 2026-12-25，共60天）',
+        detailEn: 'Created Shared Schedule (v1): Sentosa Hub SG, 60d total'
+      },
+      {
+        id: 'log_init_1',
+        timestamp: '2026-10-21T10:00:00.000Z',
+        operator: 'Admin (管理员)',
+        category: 'admin',
+        targetName: '全局基础总表',
+        detailZh: '管理员核准发布常规产品默认工时库（次元竞技场30/7/7、超级射手30/7/7、梦幻派对7/1/2）及25国船期总表',
+        detailEn: 'Admin published standard product catalog & 25-country sea freight master table'
+      }
+    ];
+
+    const savedCatalog = loadStorage('gantt_catalog_products_v1', DEFAULT_CATALOG_PRODUCTS);
+    const savedShipping = loadStorage('gantt_shipping_table_v1', DEFAULT_SHIPPING_TABLE);
+    const savedProjects = loadStorage('gantt_shared_projects_v1', DEFAULT_SHARED_PROJECTS);
+    const savedLogs = loadStorage('gantt_audit_logs_v1', DEFAULT_AUDIT_LOGS);
+    const savedWorkspace = loadStorage('gantt_workspace_state_v1', null);
+
+    const defaultCountry = savedShipping.find(c => c.id === 'us_west') || savedShipping[0] || { id: 'us_west', shippingDays: 20, travelDays: 4 };
+
+    const state = {
+      lang: (savedWorkspace && savedWorkspace.lang) ? savedWorkspace.lang : 'zh',
+      activeTab: 'planner',
+      projectName: (savedWorkspace && savedWorkspace.projectName) ? savedWorkspace.projectName : '海外旗舰店开业交付项目',
+      calcMode: (savedWorkspace && savedWorkspace.calcMode) ? savedWorkspace.calcMode : 'backward',
+      anchorDate: (savedWorkspace && savedWorkspace.anchorDate) ? savedWorkspace.anchorDate : getDefaultAnchorDateStr(),
+      selectedCountryId: (savedWorkspace && savedWorkspace.selectedCountryId) ? savedWorkspace.selectedCountryId : defaultCountry.id,
+      shippingDays: (savedWorkspace && typeof savedWorkspace.shippingDays === 'number') ? savedWorkspace.shippingDays : Number(defaultCountry.shippingDays),
+      travelDays: (savedWorkspace && typeof savedWorkspace.travelDays === 'number') ? savedWorkspace.travelDays : Number(defaultCountry.travelDays),
+      travelMode: (savedWorkspace && savedWorkspace.travelMode) ? savedWorkspace.travelMode : 'split',
+      showSubtasks: (savedWorkspace && typeof savedWorkspace.showSubtasks === 'boolean') ? savedWorkspace.showSubtasks : true,
+      manualOverride: (savedWorkspace && savedWorkspace.manualOverride) ? savedWorkspace.manualOverride : {
+        prep: null,
+        test: null,
+        install: null,
+        hwInstall: null,
+        gameSw: null,
+        ccSw: null,
+        userTrain: null
+      },
+      taskMeta: (savedWorkspace && savedWorkspace.taskMeta) ? savedWorkspace.taskMeta : {
+        prep: { priority: 'High', processing: 'In Progress' },
+        test: { priority: 'High', processing: 'Pending' },
+        ship: { priority: 'High', processing: 'Pending' },
+        siteElec: { priority: 'Critical', processing: 'Pending', startDate: '-', endDate: '-', est: '-' },
+        siteEnv: { priority: 'Critical', processing: 'Pending', startDate: '-', endDate: '-', est: '-' },
+        travelOut: { priority: 'Medium', processing: 'Pending' },
+        hwInstall: { priority: 'High', processing: 'Pending' },
+        gameSw: { priority: 'High', processing: 'Pending' },
+        ccSw: { priority: 'High', processing: 'Pending' },
+        userTrain: { priority: 'Medium', processing: 'Pending' },
+        travelBack: { priority: 'Low', processing: 'Pending' }
+      },
+      isAdmin: false,
+      adminPin: 'admin888',
+      operatorName: (savedWorkspace && savedWorkspace.operatorName) ? savedWorkspace.operatorName : '张工',
+      currentProjectId: (savedWorkspace && savedWorkspace.currentProjectId) ? savedWorkspace.currentProjectId : null,
+      kvConnected: false,
+      catalogProducts: savedCatalog,
+      shippingTable: savedShipping,
+      sharedProjects: savedProjects,
+      auditLogs: savedLogs,
+      projectItems: []
+    };
+
+    function saveWorkspaceState() {
+      saveStorage('gantt_workspace_state_v1', {
+        lang: state.lang,
+        operatorName: state.operatorName,
+        currentProjectId: state.currentProjectId,
+        projectName: state.projectName,
+        calcMode: state.calcMode,
+        anchorDate: state.anchorDate,
+        selectedCountryId: state.selectedCountryId,
+        shippingDays: state.shippingDays,
+        travelDays: state.travelDays,
+        travelMode: state.travelMode,
+        showSubtasks: state.showSubtasks,
+        manualOverride: state.manualOverride,
+        taskMeta: state.taskMeta,
+        projectItems: state.projectItems
+      });
+    }
+
+    function initProjectItemsFromCatalog() {
+      state.projectItems = state.catalogProducts.map((p, idx) => ({
+        uid: 'item_' + p.id + '_' + idx,
+        catalogId: p.id,
+        selected: true,
+        qty: 1,
+        nameZh: p.nameZh,
+        nameEn: p.nameEn,
+        prepDays: Number(p.prepDays),
+        testDays: Number(p.testDays),
+        installDays: Number(p.installDays)
+      }));
+    }
+
+    if (savedWorkspace && Array.isArray(savedWorkspace.projectItems) && savedWorkspace.projectItems.length > 0) {
+      state.projectItems = savedWorkspace.projectItems;
+    } else {
+      initProjectItemsFromCatalog();
+    }
+
+    // =========================================================================
+    // 4. DATE ARITHMETIC UTILITIES
+    // =========================================================================
+    function parseDateISO(str) {
+      if (!str) return new Date();
+      const parts = str.split('-').map(Number);
+      return new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
+    }
+
+    function formatDateISO(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatShortDate(dateObj, lang) {
+      const m = dateObj.getMonth() + 1;
+      const d = dateObj.getDate();
+      if (lang === 'en') {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[m - 1]} ${d}`;
+      }
+      return `${m}月${d}日`;
+    }
+
+    function addDays(dateObj, days) {
+      const copy = new Date(dateObj.getTime());
+      copy.setDate(copy.getDate() + days);
+      return copy;
+    }
+
+    function diffDays(startObj, endObj) {
+      const msPerDay = 1000 * 60 * 60 * 24;
+      return Math.round((endObj.getTime() - startObj.getTime()) / msPerDay);
+    }
+
+    // Given start date and duration (in calendar days >= 0), inclusive end date is start + max(0, duration - 1)
+    // For sequential continuous phases on a timeline, we use exact day offsets [offsetStart, offsetEnd).
+    function getInclusiveEndDate(startDateObj, durationDays) {
+      if (durationDays <= 0) return new Date(startDateObj.getTime());
+      return addDays(startDateObj, durationDays - 1);
+    }
+
+    // =========================================================================
+    // 5. CORE SCHEDULE & GANTT CALCULATION ENGINE
+    // =========================================================================
+    function computeSchedule() {
+      const activeItems = state.projectItems.filter(it => it.selected && Number(it.qty) > 0);
+
+      // 1. Auto-calculate Prep (MAX), Test (SUM), Install (SUM)
+      let autoPrep = 0;
+      let autoTest = 0;
+      let autoInstall = 0;
+
+      activeItems.forEach(item => {
+        const q = Math.max(0, Number(item.qty) || 0);
+        const prep = Math.max(0, Number(item.prepDays) || 0);
+        const test = Math.max(0, Number(item.testDays) || 0);
+        const inst = Math.max(0, Number(item.installDays) || 0);
+        if (q > 0) {
+          if (prep > autoPrep) autoPrep = prep;
+          autoTest += q * test;
+          autoInstall += q * inst;
+        }
+      });
+
+      const finalPrep = state.manualOverride.prep !== null ? Math.max(0, Number(state.manualOverride.prep)) : autoPrep;
+      const finalTest = state.manualOverride.test !== null ? Math.max(0, Number(state.manualOverride.test)) : autoTest;
+      const finalInstall = state.manualOverride.install !== null ? Math.max(0, Number(state.manualOverride.install)) : autoInstall;
+      const finalShip = Math.max(0, Number(state.shippingDays) || 0);
+      const finalTravel = Math.max(0, Number(state.travelDays) || 0);
+
+      // Split or grouped engineer travel
+      let travelOutDays = 0;
+      let travelBackDays = 0;
+      if (state.travelMode === 'split') {
+        travelOutDays = Math.ceil(finalTravel / 2);
+        travelBackDays = Math.floor(finalTravel / 2);
+      } else {
+        travelOutDays = finalTravel;
+        travelBackDays = 0;
+      }
+
+
+
+      // Split Installation & Training into the 4 standard tasks shown in screenshot:
+      // 1. Hardware installation and cabling
+      // 2. Game software installation and testing
+      // 3. Central Control system software installation and testing
+      // 4. User training
+      // Default split: if finalInstall >= 4, User training = 1d (or Math.max(1, round(finalInstall*0.1))),
+      // Game SW = round(finalInstall * 0.21), Central Control SW = round(finalInstall * 0.21), Hardware = remainder (e.g. for 14d -> 7, 3, 3, 1!)
+      let autoHw = 0, autoGameSw = 0, autoCcSw = 0, autoTrain = 0;
+      if (finalInstall > 0) {
+        if (finalInstall === 1) {
+          autoHw = 1;
+        } else if (finalInstall === 2) {
+          autoHw = 1; autoTrain = 1;
+        } else if (finalInstall === 3) {
+          autoHw = 1; autoGameSw = 1; autoTrain = 1;
+        } else {
+          autoTrain = Math.max(1, Math.round(finalInstall * (1 / 14)));
+          autoGameSw = Math.max(1, Math.round(finalInstall * (3 / 14)));
+          autoCcSw = Math.max(1, Math.round(finalInstall * (3 / 14)));
+          autoHw = Math.max(1, finalInstall - autoTrain - autoGameSw - autoCcSw);
+        }
+      }
+
+      const hwDays = state.manualOverride.hwInstall !== null ? Math.max(0, Number(state.manualOverride.hwInstall)) : autoHw;
+      const gameSwDays = state.manualOverride.gameSw !== null ? Math.max(0, Number(state.manualOverride.gameSw)) : autoGameSw;
+      const ccSwDays = state.manualOverride.ccSw !== null ? Math.max(0, Number(state.manualOverride.ccSw)) : autoCcSw;
+      const userTrainDays = state.manualOverride.userTrain !== null ? Math.max(0, Number(state.manualOverride.userTrain)) : autoTrain;
+
+      const effectiveInstallDays = hwDays + gameSwDays + ccSwDays + userTrainDays;
+      const totalDays = finalPrep + finalTest + finalShip + effectiveInstallDays + finalTravel;
+      const anchor = parseDateISO(state.anchorDate);
+
+      let projectStartDate;
+      let projectEndDate;
+      if (state.calcMode === 'backward') {
+        projectEndDate = anchor;
+        projectStartDate = addDays(projectEndDate, -Math.max(0, totalDays));
+      } else {
+        projectStartDate = anchor;
+        projectEndDate = addDays(projectStartDate, Math.max(0, totalDays));
+      }
+
+      const dict = I18N[state.lang];
+      const phases = [];
+      let cursor = 0;
+      const tm = state.taskMeta || {};
+
+      const isZh = state.lang === 'zh';
+      const catPre = isZh ? '发货前准备' : 'Pre-shipment';
+      const catShip = isZh ? '包装与船运' : 'Packing & Shipping';
+      const catSite = isZh ? '现场场地准备' : 'Site Ready';
+      const catInst = isZh ? '安装调试与培训' : 'Installation & Training';
+
+      const ownCcPm = isZh ? '中控与项目组' : 'CC&PM';
+      const ownSale = isZh ? '销售与物流' : 'Sale';
+      const ownSite = isZh ? '现场施工方' : "Site's contractor";
+      const ownEng = isZh ? '工程师' : 'Engineer';
+
+      // 1. Pre-shipment: Stock Preparation (MAX)
+      const prepStartOffset = cursor;
+      const prepEndOffset = cursor + finalPrep;
+      const prepSubtasks = [];
+      activeItems.forEach(item => {
+        const pDays = Math.max(0, Number(item.prepDays) || 0);
+        const subEnd = Math.min(prepEndOffset, prepStartOffset + pDays);
+        prepSubtasks.push({
+          category: catPre,
+          name: dict.subPrepPrefix + (isZh ? item.nameZh : item.nameEn) + ` ×${item.qty}`,
+          owner: ownCcPm,
+          duration: pDays,
+          startOffset: prepStartOffset,
+          endOffset: subEnd,
+          startDate: addDays(projectStartDate, prepStartOffset),
+          endDate: addDays(projectStartDate, subEnd),
+          colorClass: 'bg-indigo-400'
+        });
+      });
+
+      if (finalPrep > 0) {
+        phases.push({
+          key: 'prep',
+          overrideField: 'prep',
+          category: catPre,
+          name: isZh ? '常规产品备货（同步取最长）' : 'Equipment Stock Preparation',
+          owner: tm.prep?.owner || ownCcPm,
+          priority: tm.prep?.priority || 'High',
+          processing: tm.prep?.processing || 'In Progress',
+          duration: finalPrep,
+          startOffset: prepStartOffset,
+          endOffset: prepEndOffset,
+          startDate: addDays(projectStartDate, prepStartOffset),
+          endDate: addDays(projectStartDate, prepEndOffset),
+          colorClass: 'bg-indigo-600',
+          badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+          subtasks: prepSubtasks
+        });
+        cursor = prepEndOffset;
+      }
+
+      // 2. Pre-shipment: Pre-shipment System Testing (SUM)
+      const testStartOffset = cursor;
+      const testEndOffset = cursor + finalTest;
+      const testSubtasks = [];
+      let testSubCursor = testStartOffset;
+      activeItems.forEach(item => {
+        const itemTestDays = Math.max(0, Number(item.qty) * Number(item.testDays));
+        testSubtasks.push({
+          category: catPre,
+          name: dict.subTestPrefix + (isZh ? item.nameZh : item.nameEn) + ` (${item.qty}×${item.testDays}${dict.dayUnit})`,
+          owner: ownCcPm,
+          duration: itemTestDays,
+          startOffset: testSubCursor,
+          endOffset: testSubCursor + itemTestDays,
+          startDate: addDays(projectStartDate, testSubCursor),
+          endDate: addDays(projectStartDate, testSubCursor + itemTestDays),
+          colorClass: 'bg-emerald-400'
+        });
+        testSubCursor += itemTestDays;
+      });
+
+      phases.push({
+        key: 'test',
+        overrideField: 'test',
+        category: catPre,
+        name: isZh ? '发货前系统联调测试（多套累加）' : 'Pre-shipment System Testing',
+        owner: tm.test?.owner || ownCcPm,
+        priority: tm.test?.priority || 'High',
+        processing: tm.test?.processing || 'Pending',
+        duration: finalTest,
+        startOffset: testStartOffset,
+        endOffset: testEndOffset,
+        startDate: addDays(projectStartDate, testStartOffset),
+        endDate: addDays(projectStartDate, testEndOffset),
+        colorClass: 'bg-emerald-600',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        subtasks: testSubtasks
+      });
+      cursor = testEndOffset;
+
+      // 3. Packing & Shipping
+      const shipStartOffset = cursor;
+      const shipEndOffset = cursor + finalShip;
+      const countryObj = state.shippingTable.find(c => c.id === state.selectedCountryId);
+      const countryLabel = countryObj
+        ? (isZh ? `${countryObj.nameZh}` : `${countryObj.nameEn}`)
+        : '';
+
+      phases.push({
+        key: 'ship',
+        overrideField: 'shippingDays',
+        category: catShip,
+        name: isZh ? `设备包装与国际海运（${countryLabel}）` : `Packing & Shipping (${countryLabel})`,
+        owner: tm.ship?.owner || ownSale,
+        priority: tm.ship?.priority || 'High',
+        processing: tm.ship?.processing || 'Pending',
+        duration: finalShip,
+        startOffset: shipStartOffset,
+        endOffset: shipEndOffset,
+        startDate: addDays(projectStartDate, shipStartOffset),
+        endDate: addDays(projectStartDate, shipEndOffset),
+        colorClass: 'bg-sky-500',
+        badgeClass: 'bg-sky-50 text-sky-700 border-sky-200',
+        subtasks: []
+      });
+      cursor = shipEndOffset;
+
+      // 4. Milestone Row: ETA at Store
+      const etaDate = addDays(projectStartDate, cursor);
+      phases.push({
+        key: 'eta_milestone',
+        rowType: 'milestone',
+        category: '',
+        name: isZh ? '预计到店日期 (ETA at Store)' : 'ETA at Store',
+        owner: '',
+        priority: '-',
+        processing: 'Milestone',
+        duration: 0,
+        startOffset: cursor,
+        endOffset: cursor,
+        startDate: etaDate,
+        endDate: etaDate,
+        colorClass: 'bg-rose-500',
+        badgeClass: 'bg-rose-100 text-rose-800 border-rose-300',
+        subtasks: []
+      });
+
+      // 5. Site Ready Rows
+      phases.push({
+        key: 'siteElec',
+        rowType: 'site_ready',
+        category: catSite,
+        name: isZh ? '客户现场强弱电与网络施工就绪' : "Site's Electrical and Network Work Ready",
+        owner: tm.siteElec?.owner || ownSite,
+        priority: tm.siteElec?.priority || 'Critical',
+        processing: tm.siteElec?.processing || 'Pending',
+        duration: 0,
+        startOffset: cursor,
+        endOffset: cursor,
+        startDate: etaDate,
+        endDate: etaDate,
+        customStartStr: tm.siteElec?.startDate || '-',
+        customEndStr: tm.siteElec?.endDate || '-',
+        customEstStr: tm.siteElec?.est || '-',
+        colorClass: 'bg-red-500',
+        badgeClass: 'bg-red-50 text-red-700 border-red-200',
+        subtasks: []
+      });
+
+      phases.push({
+        key: 'siteEnv',
+        rowType: 'site_ready',
+        category: catSite,
+        name: isZh ? '客户现场环境装修与软包工程就绪' : "Site's Environment/Softplay Work Ready",
+        owner: tm.siteEnv?.owner || ownSite,
+        priority: tm.siteEnv?.priority || 'Critical',
+        processing: tm.siteEnv?.processing || 'Pending',
+        duration: 0,
+        startOffset: cursor,
+        endOffset: cursor,
+        startDate: etaDate,
+        endDate: etaDate,
+        customStartStr: tm.siteEnv?.startDate || '-',
+        customEndStr: tm.siteEnv?.endDate || '-',
+        customEstStr: tm.siteEnv?.est || '-',
+        colorClass: 'bg-red-500',
+        badgeClass: 'bg-red-50 text-red-700 border-red-200',
+        subtasks: []
+      });
+
+      // 6. Engineer Outbound Travel (if travelOutDays > 0)
+      if (travelOutDays > 0) {
+        const tOutStart = cursor;
+        const tOutEnd = cursor + travelOutDays;
+        phases.push({
+          key: 'travelOut',
+          overrideField: 'travelDays',
+          category: catInst,
+          name: state.travelMode === 'split'
+            ? (isZh ? '工程师去程差旅' : 'Engineer Outbound Travel')
+            : (isZh ? '工程师往返差旅（来回总计）' : 'Engineer Round-Trip Travel'),
+          owner: tm.travelOut?.owner || ownEng,
+          priority: tm.travelOut?.priority || 'Medium',
+          processing: tm.travelOut?.processing || 'Pending',
+          duration: travelOutDays,
+          startOffset: tOutStart,
+          endOffset: tOutEnd,
+          startDate: addDays(projectStartDate, tOutStart),
+          endDate: addDays(projectStartDate, tOutEnd),
+          colorClass: 'bg-amber-500',
+          badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+          subtasks: []
+        });
+        cursor = tOutEnd;
+      }
+
+      // 7. Installation & Training — 4 Standard Sub-Phases:
+      const hwStart = cursor;
+      const hwEnd = cursor + hwDays;
+      const instSubtasks = [];
+      let instSubCursor = hwStart;
+      activeItems.forEach(item => {
+        const itemInstDays = Math.max(0, Number(item.qty) * Number(item.installDays));
+        instSubtasks.push({
+          category: catInst,
+          name: dict.subInstallPrefix + (isZh ? item.nameZh : item.nameEn) + ` (${item.qty}×${item.installDays}${dict.dayUnit})`,
+          owner: ownEng,
+          duration: itemInstDays,
+          startOffset: instSubCursor,
+          endOffset: instSubCursor + itemInstDays,
+          startDate: addDays(projectStartDate, instSubCursor),
+          endDate: addDays(projectStartDate, instSubCursor + itemInstDays),
+          colorClass: 'bg-violet-400'
+        });
+        instSubCursor += itemInstDays;
+      });
+
+      phases.push({
+        key: 'hwInstall',
+        overrideField: 'hwInstall',
+        category: catInst,
+        name: isZh ? '硬件安装与综合布线' : 'Hardware installation and cabling',
+        owner: tm.hwInstall?.owner || ownEng,
+        priority: tm.hwInstall?.priority || 'High',
+        processing: tm.hwInstall?.processing || 'Pending',
+        duration: hwDays,
+        startOffset: hwStart,
+        endOffset: hwEnd,
+        startDate: addDays(projectStartDate, hwStart),
+        endDate: addDays(projectStartDate, hwEnd),
+        colorClass: 'bg-violet-600',
+        badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
+        subtasks: instSubtasks
+      });
+      cursor = hwEnd;
+
+      const gameStart = cursor;
+      const gameEnd = cursor + gameSwDays;
+      phases.push({
+        key: 'gameSw',
+        overrideField: 'gameSw',
+        category: catInst,
+        name: isZh ? '游戏软件安装与联调测试' : 'Game software installation and testing',
+        owner: tm.gameSw?.owner || ownEng,
+        priority: tm.gameSw?.priority || 'High',
+        processing: tm.gameSw?.processing || 'Pending',
+        duration: gameSwDays,
+        startOffset: gameStart,
+        endOffset: gameEnd,
+        startDate: addDays(projectStartDate, gameStart),
+        endDate: addDays(projectStartDate, gameEnd),
+        colorClass: 'bg-violet-500',
+        badgeClass: 'bg-violet-50 text-violet-700 border-violet-200',
+        subtasks: []
+      });
+      cursor = gameEnd;
+
+      const ccStart = cursor;
+      const ccEnd = cursor + ccSwDays;
+      phases.push({
+        key: 'ccSw',
+        overrideField: 'ccSw',
+        category: catInst,
+        name: isZh ? '中控系统软件安装与测试' : 'Central Control system software installation and testing',
+        owner: tm.ccSw?.owner || ownEng,
+        priority: tm.ccSw?.priority || 'High',
+        processing: tm.ccSw?.processing || 'Pending',
+        duration: ccSwDays,
+        startOffset: ccStart,
+        endOffset: ccEnd,
+        startDate: addDays(projectStartDate, ccStart),
+        endDate: addDays(projectStartDate, ccEnd),
+        colorClass: 'bg-purple-600',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+        subtasks: []
+      });
+      cursor = ccEnd;
+
+      const trainStart = cursor;
+      const trainEnd = cursor + userTrainDays;
+      phases.push({
+        key: 'userTrain',
+        overrideField: 'userTrain',
+        category: catInst,
+        name: isZh ? '现场人员操作与运维培训' : 'User training',
+        owner: tm.userTrain?.owner || ownEng,
+        priority: tm.userTrain?.priority || 'Medium',
+        processing: tm.userTrain?.processing || 'Pending',
+        duration: userTrainDays,
+        startOffset: trainStart,
+        endOffset: trainEnd,
+        startDate: addDays(projectStartDate, trainStart),
+        endDate: addDays(projectStartDate, trainEnd),
+        colorClass: 'bg-fuchsia-600',
+        badgeClass: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200',
+        subtasks: []
+      });
+      cursor = trainEnd;
+
+      // 8. Engineer Return Travel (if split mode)
+      if (travelBackDays > 0) {
+        const tBackStart = cursor;
+        const tBackEnd = cursor + travelBackDays;
+        phases.push({
+          key: 'travelBack',
+          overrideField: 'travelDays',
+          category: catInst,
+          name: isZh ? '工程师返程差旅' : 'Engineer Return Travel',
+          owner: tm.travelBack?.owner || ownEng,
+          priority: tm.travelBack?.priority || 'Low',
+          processing: tm.travelBack?.processing || 'Pending',
+          duration: travelBackDays,
+          startOffset: tBackStart,
+          endOffset: tBackEnd,
+          startDate: addDays(projectStartDate, tBackStart),
+          endDate: addDays(projectStartDate, tBackEnd),
+          colorClass: 'bg-amber-500',
+          badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+          subtasks: []
+        });
+        cursor = tBackEnd;
+      }
+
+      return {
+        activeItems,
+        autoPrep,
+        autoTest,
+        autoInstall,
+        finalPrep,
+        finalTest,
+        finalShip,
+        finalInstall: effectiveInstallDays,
+        finalTravel,
+        totalDays,
+        projectStartDate,
+        projectEndDate,
+        shipStartDate: addDays(projectStartDate, shipStartOffset),
+        installEndDate: addDays(projectStartDate, trainEnd),
+        phases
+      };
+    }
+
+    // =========================================================================
+    // 6. UI RENDERING FUNCTIONS
+    // =========================================================================
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      const lbl = document.getElementById('toastMsg');
+      lbl.textContent = msg;
+      box.classList.remove('hidden');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+      }, 2600);
+    }
+
+    function applyTranslations() {
+      const d = I18N[state.lang];
+      document.documentElement.lang = state.lang === 'zh' ? 'zh-CN' : 'en';
+
+      const textIds = [
+        'appTitle', 'appSubtitle', 'tabBtnPlanner', 'tabBtnProducts', 'tabBtnShipping',
+        'mobTabPlanner', 'mobTabProducts', 'mobTabShipping', 'lblDeployBtn', 'lblLangSwitch',
+        'secProjectSettings', 'lblResetBtn', 'lblProjectName', 'lblCalcMode', 'optBackward', 'optForward',
+        'lblCountry', 'btnJumpShippingTable', 'lblShippingDays', 'badgeShippingEditable', 'lblTravelDays',
+        'lblTravelMode', 'optTravelSplit', 'optTravelBefore', 'secProductsSelection', 'btnAddCustomRow',
+        'btnResetProductParams', 'thSelect', 'thProductName', 'thQty', 'thPrep', 'thTest', 'thInstall',
+        'thSubtotal', 'lblAggregatedTitle', 'cardPrepLbl', 'cardTestLbl', 'cardShipLbl', 'cardInstallLbl',
+        'cardTravelLbl', 'kpiStartLabel', 'kpiShipDateLabel', 'kpiEndLabel', 'kpiTotalDaysLabel',
+        'secGanttTitle', 'lblShowSubtasks', 'lblExportCsv', 'lblCopySummary', 'lblPrint',
+        'ganttColCategory', 'ganttColTask', 'ganttColOwner', 'ganttColPriority', 'ganttColProcessing', 'ganttColStart', 'ganttColEnd', 'ganttColDuration', 'legPrep', 'legTest', 'legShip',
+        'legTravel', 'legInstall', 'ganttFootnote', 'catProductsTitle', 'catProductsDesc',
+        'btnAddCatalogProduct', 'btnResetCatalogProducts', 'catThZh', 'catThEn', 'catThPrep',
+        'catThTest', 'catThInstall', 'catThAction', 'catShippingTitle', 'catShippingDesc',
+        'btnAddCountryRow', 'btnResetShippingCatalog', 'shipThRegion', 'shipThCountryZh',
+        'shipThCountryEn', 'shipThSeaDays', 'shipThTravelDays', 'shipThNote', 'shipThAction'
+      ];
+
+      textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && d[id]) el.textContent = d[id];
+      });
+
+      document.getElementById('ruleExplainText').innerHTML = d.ruleExplainHtml;
+      document.getElementById('lblAnchorDate').textContent =
+        state.calcMode === 'backward' ? d.lblAnchorDateBackward : d.lblAnchorDateForward;
+
+      document.querySelectorAll('.day-unit').forEach(el => {
+        el.textContent = d.dayUnit;
+      });
+
+      const extraIds = [
+        'lblTabHistory', 'lblOperatorTag', 'lblSaveCloudBtn', 'lblSaveAsNewBtn',
+        'secQuickHistoryTitle', 'btnJumpFullHistory', 'histViewTitle', 'histViewDesc',
+        'histThProj', 'histThCountry', 'histThItems', 'histThDates', 'histThUpdated',
+        'histThActions', 'auditLogTitle', 'auditLogDesc', 'logThTime', 'logThUser',
+        'logThType', 'logThDetail'
+      ];
+      extraIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && d[id]) el.textContent = d[id];
+      });
+
+      const projInput = document.getElementById('inputProjectName');
+      if (projInput.value === I18N.zh.defaultProjectName || projInput.value === I18N.en.defaultProjectName) {
+        projInput.value = d.defaultProjectName;
+      }
+
+      renderAdminAndCloudStatus();
+    }
+
+    function renderAdminAndCloudStatus() {
+      const d = I18N[state.lang];
+      const adminDot = document.getElementById('adminStatusDot');
+      const adminLbl = document.getElementById('lblAdminBtn');
+      const adminBtn = document.getElementById('btnAdminToggle');
+
+      if (state.isAdmin) {
+        adminDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        adminLbl.textContent = d.adminUnlockedBtn;
+        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/30 transition flex items-center gap-1.5';
+      } else {
+        adminDot.className = 'w-2 h-2 rounded-full bg-slate-400';
+        adminLbl.textContent = d.adminLoginBtn;
+        adminBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5';
+      }
+
+      // Update banners in Products & Shipping views
+      const bannerProd = document.getElementById('adminBannerProducts');
+      const bannerShip = document.getElementById('adminBannerShipping');
+      const btnAddProd = document.getElementById('btnAddCatalogProduct');
+      const btnResetProd = document.getElementById('btnResetCatalogProducts');
+      const btnAddCountry = document.getElementById('btnAddCountryRow');
+      const btnResetShip = document.getElementById('btnResetShippingCatalog');
+
+      if (state.isAdmin) {
+        bannerProd.className = 'rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-900';
+        document.getElementById('lblAdminLockNoticeProd').textContent = state.lang === 'zh'
+          ? '✅ 管理员权限已解锁：您现在可以直接增删改常规产品默认工时，所有修改将自动记录日志并同步至云端。'
+          : '✅ Admin Mode Unlocked: You can now edit standard product defaults. Changes sync to Cloud & Audit Log.';
+        document.getElementById('btnUnlockFromProducts').textContent = state.lang === 'zh' ? '退出管理员模式' : 'Lock Admin';
+        document.getElementById('btnUnlockFromProducts').className = 'px-3 py-1 rounded-lg font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition';
+
+        bannerShip.className = 'rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-900';
+        document.getElementById('lblAdminLockNoticeShip').textContent = state.lang === 'zh'
+          ? '✅ 管理员权限已解锁：您现在可以增删改国家、预计船运时间与工程师来回时间，所有修改将自动记录日志并同步至云端。'
+          : '✅ Admin Mode Unlocked: You can now edit country sea freight & travel times. Changes sync to Cloud & Audit Log.';
+        document.getElementById('btnUnlockFromShipping').textContent = state.lang === 'zh' ? '退出管理员模式' : 'Lock Admin';
+        document.getElementById('btnUnlockFromShipping').className = 'px-3 py-1 rounded-lg font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition';
+
+        [btnAddProd, btnResetProd, btnAddCountry, btnResetShip].forEach(b => {
+          if (b) { b.disabled = false; b.classList.remove('opacity-40', 'cursor-not-allowed'); }
+        });
+      } else {
+        bannerProd.className = 'rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900';
+        document.getElementById('lblAdminLockNoticeProd').textContent = state.lang === 'zh'
+          ? '🔒 当前为【普通成员只读模式】。维护常规产品默认工时库需要管理员权限（默认密码 admin888）。'
+          : '🔒 Read-Only Member Mode. Unlock Admin Mode (PIN: admin888) to modify standard product defaults.';
+        document.getElementById('btnUnlockFromProducts').textContent = state.lang === 'zh' ? '管理员解锁维护' : 'Unlock Admin';
+        document.getElementById('btnUnlockFromProducts').className = 'px-3 py-1 rounded-lg font-semibold bg-amber-600 text-white hover:bg-amber-700 transition';
+
+        bannerShip.className = 'rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900';
+        document.getElementById('lblAdminLockNoticeShip').textContent = state.lang === 'zh'
+          ? '🔒 当前为【普通成员只读模式】。维护国家、船运时间及差旅默认总表需要管理员权限（默认密码 admin888）。'
+          : '🔒 Read-Only Member Mode. Unlock Admin Mode (PIN: admin888) to modify country shipping & travel defaults.';
+        document.getElementById('btnUnlockFromShipping').textContent = state.lang === 'zh' ? '管理员解锁维护' : 'Unlock Admin';
+        document.getElementById('btnUnlockFromShipping').className = 'px-3 py-1 rounded-lg font-semibold bg-amber-600 text-white hover:bg-amber-700 transition';
+
+        [btnAddProd, btnResetProd, btnAddCountry, btnResetShip].forEach(b => {
+          if (b) { b.disabled = true; b.classList.add('opacity-40', 'cursor-not-allowed'); }
+        });
+      }
+
+      // Cloud status badge & current editing project badge
+      const cloudLbl = document.getElementById('lblCloudSyncStatus');
+      if (cloudLbl) {
+        cloudLbl.textContent = state.kvConnected ? d.cloudStatusKv : d.cloudStatusLocal;
+      }
+
+      const editBadge = document.getElementById('currentEditingBadge');
+      if (editBadge) {
+        const activeProj = state.sharedProjects.find(p => p.id === state.currentProjectId);
+        if (activeProj) {
+          editBadge.textContent = d.editingExistingTpl
+            .replace('{name}', activeProj.projectName)
+            .replace('{ver}', activeProj.version || 1);
+          editBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        } else {
+          editBadge.textContent = d.editingDraft;
+          editBadge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200';
+        }
+      }
+
+      const badgeCount = document.getElementById('badgeHistoryCount');
+      if (badgeCount) {
+        badgeCount.textContent = state.sharedProjects.length;
+      }
+    }
+
+    function renderCountrySelector() {
+      const sel = document.getElementById('selectCountry');
+      const d = I18N[state.lang];
+      const regions = [
+        { key: 'Asia', label: d.regionAsia },
+        { key: 'Americas', label: d.regionAmericas },
+        { key: 'Europe', label: d.regionEurope },
+        { key: 'Oceania', label: d.regionOceania }
+      ];
+
+      sel.innerHTML = '';
+      regions.forEach(reg => {
+        const group = document.createElement('optgroup');
+        group.label = reg.label;
+        const countries = state.shippingTable.filter(c => c.region === reg.key);
+        countries.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          const cName = state.lang === 'zh' ? `${c.nameZh} (${c.nameEn})` : `${c.nameEn} (${c.nameZh})`;
+          const shipTxt = state.lang === 'zh' ? `船期${c.shippingDays}天 / 来回${c.travelDays}天` : `Sea ${c.shippingDays}d / Trip ${c.travelDays}d`;
+          opt.textContent = `${cName} — ${shipTxt}`;
+          if (c.id === state.selectedCountryId) opt.selected = true;
+          group.appendChild(opt);
+        });
+        sel.appendChild(group);
+      });
+
+      const selectedCountry = state.shippingTable.find(c => c.id === state.selectedCountryId);
+      const badgeEl = document.getElementById('badgeTravelRegion');
+      if (selectedCountry && badgeEl) {
+        if (selectedCountry.region === 'Asia') {
+          badgeEl.textContent = d.badgeAsia;
+          badgeEl.className = 'ml-1 text-[10px] font-normal text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded';
+        } else {
+          badgeEl.textContent = d.badgeLongHaul;
+          badgeEl.className = 'ml-1 text-[10px] font-normal text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded';
+        }
+      }
+    }
+
+    function renderProjectProductsTable() {
+      const tbody = document.getElementById('projectProductsTbody');
+      tbody.innerHTML = '';
+
+      state.projectItems.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = item.selected ? 'bg-white hover:bg-slate-50/80 transition' : 'bg-slate-50/60 opacity-60 transition';
+
+        const q = Math.max(0, Number(item.qty) || 0);
+        const subPrep = q > 0 ? item.prepDays : 0;
+        const subTest = q * item.testDays;
+        const subInst = q * item.installDays;
+
+        tr.innerHTML = `
+          <td class="py-2.5 pr-2">
+            <input type="checkbox" data-idx="${idx}" class="item-chk w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" ${item.selected ? 'checked' : ''} />
+          </td>
+          <td class="py-2.5 px-2">
+            <div class="flex flex-col gap-1">
+              <input type="text" data-idx="${idx}" data-name-field="${state.lang === 'zh' ? 'nameZh' : 'nameEn'}" value="${state.lang === 'zh' ? item.nameZh : item.nameEn}" placeholder="${state.lang === 'zh' ? '输入设备中文名' : 'Equipment Name'}" class="item-name-inp w-full min-w-[120px] rounded border ${item.catalogId ? 'border-transparent hover:border-slate-300 focus:border-indigo-500 bg-transparent focus:bg-white' : 'border-emerald-300 bg-emerald-50/30 focus:bg-white focus:border-indigo-500'} px-1.5 py-0.5 font-semibold text-slate-900 text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500 focus:outline-none transition" />
+              <input type="text" data-idx="${idx}" data-name-field="${state.lang === 'zh' ? 'nameEn' : 'nameZh'}" value="${state.lang === 'zh' ? item.nameEn : item.nameZh}" placeholder="${state.lang === 'zh' ? 'English Name (选填)' : '中文名称 (Optional)'}" class="item-name-inp w-full min-w-[120px] rounded border border-transparent hover:border-slate-200 focus:border-indigo-400 bg-transparent focus:bg-white px-1.5 py-0.5 text-[11px] text-slate-400 focus:text-slate-700 focus:outline-none transition" />
+            </div>
+          </td>
+          <td class="py-2.5 px-2 text-center">
+            <input type="number" min="0" max="99" step="1" data-idx="${idx}" data-field="qty" value="${item.qty}" class="item-num w-16 text-center rounded-lg border border-slate-300 py-1 px-1.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </td>
+          <td class="py-2.5 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="prepDays" value="${item.prepDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </td>
+          <td class="py-2.5 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="testDays" value="${item.testDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </td>
+          <td class="py-2.5 px-2 text-center">
+            <input type="number" min="0" max="365" step="1" data-idx="${idx}" data-field="installDays" value="${item.installDays}" class="item-num w-16 text-center rounded-lg border border-slate-200 bg-slate-50 focus:bg-white py-1 px-1.5 text-xs text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </td>
+          <td class="py-2.5 pl-2 text-right font-mono text-xs">
+            <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${subPrep}d</span> /
+            <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${subTest}d</span> /
+            <span class="px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">${subInst}d</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Attach listeners
+      tbody.querySelectorAll('.item-name-inp').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const i = Number(e.target.getAttribute('data-idx'));
+          const nf = e.target.getAttribute('data-name-field');
+          state.projectItems[i][nf] = e.target.value;
+          updateCalculationsAndGantt();
+        });
+      });
+
+      tbody.querySelectorAll('.item-chk').forEach(chk => {
+        chk.addEventListener('change', (e) => {
+          const i = Number(e.target.getAttribute('data-idx'));
+          state.projectItems[i].selected = e.target.checked;
+          clearManualOverrides();
+          renderAll();
+        });
+      });
+
+      tbody.querySelectorAll('.item-num').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const i = Number(e.target.getAttribute('data-idx'));
+          const field = e.target.getAttribute('data-field');
+          const val = Math.max(0, Number(e.target.value) || 0);
+          state.projectItems[i][field] = val;
+          if (field === 'qty' && val > 0 && !state.projectItems[i].selected) {
+            state.projectItems[i].selected = true;
+          }
+          clearManualOverrides();
+          updateCalculationsAndGantt();
+          // Also update row subtotal badges without losing input focus
+          const row = e.target.closest('tr');
+          if (row) {
+            const it = state.projectItems[i];
+            const q = Math.max(0, Number(it.qty) || 0);
+            const lastTd = row.querySelector('td:last-child');
+            if (lastTd) {
+              lastTd.innerHTML = `
+                <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">${q > 0 ? it.prepDays : 0}d</span> /
+                <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">${q * it.testDays}d</span> /
+                <span class="px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-semibold">${q * it.installDays}d</span>
+              `;
+            }
+          }
+        });
+      });
+    }
+
+    function clearManualOverrides() {
+      state.manualOverride.prep = null;
+      state.manualOverride.test = null;
+      state.manualOverride.install = null;
+      state.manualOverride.hwInstall = null;
+      state.manualOverride.gameSw = null;
+      state.manualOverride.ccSw = null;
+      state.manualOverride.userTrain = null;
+    }
+
+    function updateCalculationsAndGantt() {
+      const sched = computeSchedule();
+      const d = I18N[state.lang];
+
+      // Update override inputs & summary cards
+      const inpPrep = document.getElementById('overridePrepDays');
+      const inpTest = document.getElementById('overrideTestDays');
+      const inpInst = document.getElementById('overrideInstallDays');
+
+      if (document.activeElement !== inpPrep) inpPrep.value = sched.finalPrep;
+      if (document.activeElement !== inpTest) inpTest.value = sched.finalTest;
+      if (document.activeElement !== inpInst) inpInst.value = sched.finalInstall;
+
+      document.getElementById('summaryShipDays').textContent = sched.finalShip;
+      document.getElementById('summaryTravelDays').textContent = sched.finalTravel;
+
+      const isManual = state.manualOverride.prep !== null || state.manualOverride.test !== null || state.manualOverride.install !== null;
+      const statusEl = document.getElementById('lblManualOverrideStatus');
+      statusEl.textContent = isManual ? d.statusManual : d.statusAuto;
+      statusEl.className = isManual ? 'text-[11px] text-amber-600 font-medium' : 'text-[11px] text-slate-500';
+
+      // KPI Strip
+      document.getElementById('kpiStartDate').textContent = formatDateISO(sched.projectStartDate);
+      document.getElementById('kpiStartSub').textContent = state.lang === 'zh'
+        ? `备货 ${sched.finalPrep} 天 + 测试 ${sched.finalTest} 天`
+        : `Prep ${sched.finalPrep}d + Test ${sched.finalTest}d`;
+
+      document.getElementById('kpiShipDate').textContent = formatDateISO(sched.shipStartDate);
+      document.getElementById('kpiShipSub').textContent = state.lang === 'zh'
+        ? `海上船运预计 ${sched.finalShip} 天`
+        : `Sea transit est. ${sched.finalShip} days`;
+
+      document.getElementById('kpiEndDate').textContent = formatDateISO(sched.projectEndDate);
+      document.getElementById('kpiEndSub').textContent = state.lang === 'zh'
+        ? `安装调试与培训结束：${formatDateISO(sched.installEndDate)}`
+        : `Install & Training ends: ${formatDateISO(sched.installEndDate)}`;
+
+      document.getElementById('kpiTotalDays').textContent = sched.totalDays;
+      document.getElementById('kpiTotalBreakdown').textContent =
+        `${sched.finalPrep} + ${sched.finalTest} + ${sched.finalShip} + ${sched.finalInstall} + ${sched.finalTravel} = ${sched.totalDays}${d.dayUnit}`;
+
+      // Check overdue alert (if projectStartDate is earlier than today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startMid = new Date(sched.projectStartDate.getTime());
+      startMid.setHours(0, 0, 0, 0);
+      const banner = document.getElementById('urgentAlertBanner');
+
+      if (sched.totalDays > 0 && startMid < today) {
+        const overdueDays = diffDays(startMid, today);
+        banner.classList.remove('hidden');
+        document.getElementById('urgentAlertTitle').textContent = d.urgentAlertTitle;
+        document.getElementById('urgentAlertDesc').textContent = d.urgentAlertDescTpl
+          .replace('{startDate}', formatDateISO(sched.projectStartDate))
+          .replace('{overdueDays}', overdueDays);
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      saveWorkspaceState();
+      renderGanttChart(sched);
+    }
+
+    function renderGanttChart(sched) {
+      const headerEl = document.getElementById('ganttTimelineHeader');
+      const rowsEl = document.getElementById('ganttRowsContainer');
+      const d = I18N[state.lang];
+
+      const total = Math.max(1, sched.totalDays);
+
+      // Build 6 evenly spaced date markers across the timeline header
+      const tickCount = 6;
+      let ticksHtml = '<div class="flex justify-between items-center text-[11px] text-slate-600 font-mono">';
+      for (let i = 0; i <= tickCount; i++) {
+        const dayOffset = Math.round((i / tickCount) * Math.max(0, total - 1));
+        const tickDate = addDays(sched.projectStartDate, dayOffset);
+        ticksHtml += `<span>${formatShortDate(tickDate, state.lang)}</span>`;
+      }
+      ticksHtml += '</div>';
+      ticksHtml += `<div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+        <span>Day 1 (${formatDateISO(sched.projectStartDate)})</span>
+        <span>Day ${sched.totalDays} (${formatDateISO(sched.projectEndDate)})</span>
+      </div>`;
+      headerEl.innerHTML = ticksHtml;
+
+      rowsEl.innerHTML = '';
+
+      if (sched.activeItems.length === 0) {
+        rowsEl.innerHTML = `<div class="p-8 text-center text-sm text-slate-400">${d.noProductWarning}</div>`;
+        return;
+      }
+
+      sched.phases.forEach((phase, pIdx) => {
+        const leftPct = Math.min(98, Math.max(0, (phase.startOffset / total) * 100)).toFixed(2);
+        const widthPct = Math.max(1.8, ((phase.duration / total) * 100)).toFixed(2);
+
+        const isZh = state.lang === 'zh';
+        // Special Row 1: Pink Milestone Row (ETA at Store)
+        if (phase.rowType === 'milestone') {
+          const etaStr = formatDateISO(phase.startDate);
+          const mDiv = document.createElement('div');
+          mDiv.className = 'grid grid-cols-24 items-center bg-slate-100/80 text-xs';
+          mDiv.innerHTML = `
+            <div class="col-span-3 py-2.5 px-3 border-r border-slate-200"></div>
+            <div class="col-span-5 py-2.5 px-3 border-r border-rose-300/60 bg-[#e69999]/85 font-semibold text-slate-900">
+              ${phase.name}
+            </div>
+            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center">-</div>
+            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center">-</div>
+            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center text-[11px] font-semibold text-rose-950">${isZh ? '里程碑节点' : 'Milestone'}</div>
+            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center font-mono font-bold text-slate-900">${etaStr}</div>
+            <div class="col-span-2 py-2.5 px-2 border-r border-rose-300/60 bg-[#e69999]/85 text-center font-mono text-slate-800">${etaStr}</div>
+            <div class="col-span-1 py-2.5 px-1 border-r border-slate-200 text-center font-mono text-slate-500">-</div>
+            <div class="col-span-5 py-2 px-3 relative h-9 flex items-center gantt-grid-bg">
+              <div class="relative w-full h-5 flex items-center">
+                <div class="absolute w-3.5 h-3.5 rotate-45 bg-rose-600 border-2 border-white shadow" style="left: calc(${leftPct}% - 6px);" title="${phase.name}: ${etaStr}"></div>
+              </div>
+            </div>
+          `;
+          rowsEl.appendChild(mDiv);
+          return;
+        }
+
+        // Special Row 2: Site Ready Red Text Rows
+        if (phase.rowType === 'site_ready') {
+          const sDiv = document.createElement('div');
+          sDiv.className = 'grid grid-cols-24 items-center bg-white hover:bg-red-50/20 transition text-xs';
+          sDiv.innerHTML = `
+            <div class="col-span-3 py-2.5 px-3 border-r border-slate-200 font-semibold text-red-600 truncate">
+              ${phase.category}
+            </div>
+            <div class="col-span-5 py-2.5 px-3 border-r border-slate-200 font-medium text-red-600 truncate" title="${phase.name}">
+              ${phase.name}
+            </div>
+            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center text-xs text-slate-800">
+              ${phase.owner}
+            </div>
+            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
+              <span class="px-2 py-0.5 rounded bg-red-50 text-red-600 text-[11px] font-semibold">${isZh ? '紧急' : 'Critical'}</span>
+            </div>
+            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
+              <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+                <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待就绪' : 'Pending'}</option>
+                <option value="Ready" ${phase.processing === 'Ready' ? 'selected' : ''}>${isZh ? '已就绪' : 'Ready'}</option>
+              </select>
+            </div>
+            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
+              <input type="text" data-meta-key="${phase.key}" data-meta-field="startDate" value="${phase.customStartStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white rounded px-1 py-0.5 font-mono text-[11px]" />
+            </div>
+            <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center font-mono text-[11px] text-slate-600">
+              <input type="text" data-meta-key="${phase.key}" data-meta-field="endDate" value="${phase.customEndStr}" class="gantt-meta-inp w-full text-center bg-transparent hover:bg-slate-100 focus:bg-white rounded px-1 py-0.5 font-mono text-[11px]" />
+            </div>
+            <div class="col-span-1 py-2 px-1 border-r border-slate-200 text-center font-mono text-[11px] text-slate-500">
+              -
+            </div>
+            <div class="col-span-5 py-2 px-3 relative h-10 flex items-center gantt-grid-bg text-[11px] text-red-500 font-medium">
+              <span class="truncate">${isZh ? `需在 ${formatDateISO(phase.startDate)} 前就绪` : `Ready before ${formatDateISO(phase.startDate)}`}</span>
+            </div>
+          `;
+          rowsEl.appendChild(sDiv);
+          return;
+        }
+
+        // Standard Timed Phase Row
+        const startDateStr = phase.duration > 0 ? formatDateISO(phase.startDate) : '-';
+        const endDateStr = phase.duration > 0 ? formatDateISO(phase.endDate) : '-';
+        const dateRangeStr = phase.duration > 0 ? `${startDateStr} → ${endDateStr}` : '-';
+        const zebraCls = pIdx % 2 === 1 ? 'bg-slate-50/70' : 'bg-white';
+
+        const rowDiv = document.createElement('div');
+        rowDiv.className = `grid grid-cols-24 items-center ${zebraCls} hover:bg-indigo-50/30 transition text-xs`;
+        rowDiv.innerHTML = `
+          <div class="col-span-3 py-2.5 px-3 border-r border-slate-200 font-semibold text-slate-800 truncate" title="${phase.category}">
+            ${phase.category}
+          </div>
+          <div class="col-span-5 py-2.5 px-3 border-r border-slate-200 font-medium text-slate-900 truncate" title="${phase.name}">
+            ${phase.name}
+          </div>
+          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center text-xs font-medium text-slate-700 truncate">
+            ${phase.owner || ''}
+          </div>
+          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
+            <select data-meta-key="${phase.key}" data-meta-field="priority" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+              <option value="High" ${phase.priority === 'High' ? 'selected' : ''}>${isZh ? '高' : 'High'}</option>
+              <option value="Medium" ${phase.priority === 'Medium' ? 'selected' : ''}>${isZh ? '中' : 'Medium'}</option>
+              <option value="Low" ${phase.priority === 'Low' ? 'selected' : ''}>${isZh ? '低' : 'Low'}</option>
+            </select>
+          </div>
+          <div class="col-span-2 py-2 px-1.5 border-r border-slate-200 text-center">
+            <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-transparent text-slate-700 rounded px-1 py-0.5 cursor-pointer">
+              <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待开始' : 'Pending'}</option>
+              <option value="In Progress" ${phase.processing === 'In Progress' ? 'selected' : ''}>${isZh ? '进行中' : 'In Progress'}</option>
+              <option value="Done" ${phase.processing === 'Done' ? 'selected' : ''}>${isZh ? '已完成' : 'Done'}</option>
+            </select>
+          </div>
+          <div class="col-span-2 py-2.5 px-1.5 border-r border-slate-200 text-center font-mono text-xs text-slate-800">
+            ${startDateStr}
+          </div>
+          <div class="col-span-2 py-2.5 px-1.5 border-r border-slate-200 text-center font-mono text-xs text-slate-600">
+            ${endDateStr}
+          </div>
+          <div class="col-span-1 py-2 px-1 border-r border-slate-200 text-center">
+            <input type="number" min="0" max="365" data-override-field="${phase.overrideField || ''}" value="${phase.duration}" class="gantt-est-inp w-12 text-center font-mono font-bold text-xs rounded border border-slate-300 bg-white py-0.5 px-1 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+          </div>
+          <div class="col-span-5 py-2 px-3 relative h-10 flex items-center gantt-grid-bg">
+            <div class="relative w-full h-5 bg-slate-200/70 rounded overflow-hidden">
+              <div
+                class="absolute top-0 bottom-0 rounded ${phase.colorClass} text-white text-[10px] font-semibold flex items-center justify-center shadow-xs transition-all duration-300 overflow-hidden whitespace-nowrap px-1"
+                style="left: ${leftPct}%; width: ${widthPct}%;"
+                title="${phase.name}: ${dateRangeStr} (${phase.duration}${d.dayUnit})"
+              >
+                ${phase.duration > 0 ? `${phase.duration}${d.dayUnit}` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        rowsEl.appendChild(rowDiv);
+
+        // Render per-product subtasks if toggled on
+        if (state.showSubtasks && phase.subtasks && phase.subtasks.length > 0) {
+          phase.subtasks.forEach(sub => {
+            const subLeft = Math.min(98, Math.max(0, (sub.startOffset / total) * 100)).toFixed(2);
+            const subWidth = Math.max(1.2, ((sub.duration / total) * 100)).toFixed(2);
+            const subStartStr = sub.duration > 0 ? formatDateISO(sub.startDate) : '-';
+            const subEndStr = sub.duration > 0 ? formatDateISO(sub.endDate) : '-';
+            const subDateStr = sub.duration > 0 ? `${subStartStr} → ${subEndStr}` : '-';
+
+            const subDiv = document.createElement('div');
+            subDiv.className = 'grid grid-cols-24 items-center bg-slate-50/90 text-[11px] text-slate-500';
+            subDiv.innerHTML = `
+              <div class="col-span-3 py-1.5 px-3 border-r border-slate-100 text-[10px] text-slate-400 truncate">
+                ${sub.category || ''}
+              </div>
+              <div class="col-span-5 py-1.5 pl-5 pr-2 border-r border-slate-100 truncate" title="${sub.name}">
+                ${sub.name}
+              </div>
+              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center text-[10px]">
+                ${sub.owner || ''}
+              </div>
+              <div class="col-span-2 py-1.5 px-1 border-r border-slate-100 text-center text-[10px]">-</div>
+              <div class="col-span-2 py-1.5 px-1 border-r border-slate-100 text-center text-[10px]">${isZh ? '产品分项' : 'Subtask'}</div>
+              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center font-mono text-[10px]">
+                ${subStartStr}
+              </div>
+              <div class="col-span-2 py-1.5 px-1.5 border-r border-slate-100 text-center font-mono text-[10px]">
+                ${subEndStr}
+              </div>
+              <div class="col-span-1 py-1.5 px-1 border-r border-slate-100 text-center font-mono">
+                ${sub.duration}
+              </div>
+              <div class="col-span-5 py-1 px-3 relative h-7 flex items-center gantt-grid-bg">
+                <div class="relative w-full h-3.5 bg-slate-200/60 rounded overflow-hidden">
+                  <div
+                    class="absolute top-0 bottom-0 rounded ${sub.colorClass} text-white text-[9px] flex items-center justify-center px-1 truncate"
+                    style="left: ${subLeft}%; width: ${subWidth}%;"
+                    title="${sub.name}: ${subDateStr}"
+                  >
+                    ${sub.duration}${d.dayUnit}
+                  </div>
+                </div>
+              </div>
+            `;
+            rowsEl.appendChild(subDiv);
+          });
+        }
+      });
+
+      // Attach listeners for inline Estimated days and metadata edits inside the Gantt table
+      rowsEl.querySelectorAll('.gantt-est-inp').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const field = e.target.getAttribute('data-override-field');
+          const val = Math.max(0, Number(e.target.value) || 0);
+          if (!field) return;
+          if (field === 'shippingDays') {
+            state.shippingDays = val;
+            document.getElementById('inputShippingDays').value = val;
+          } else if (field === 'travelDays') {
+            state.travelDays = val;
+            document.getElementById('inputTravelDays').value = val;
+          } else {
+            state.manualOverride[field] = val;
+          }
+          updateCalculationsAndGantt();
+        });
+      });
+
+      rowsEl.querySelectorAll('.gantt-meta-inp').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const key = e.target.getAttribute('data-meta-key');
+          const field = e.target.getAttribute('data-meta-field');
+          if (!key || !field) return;
+          if (!state.taskMeta[key]) state.taskMeta[key] = {};
+          state.taskMeta[key][field] = e.target.value;
+          saveWorkspaceState();
+        });
+      });
+    }
+
+    // =========================================================================
+    // 7. CATALOG MANAGEMENT VIEWS (Products & Country Shipping Table)
+    // =========================================================================
+    function recordAuditLog(category, targetName, detailZh, detailEn) {
+      const entry = {
+        id: 'log_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        timestamp: new Date().toISOString(),
+        operator: state.operatorName || '张工',
+        category,
+        targetName,
+        detailZh,
+        detailEn
+      };
+      state.auditLogs.unshift(entry);
+      state.auditLogs = state.auditLogs.slice(0, 100);
+      saveStorage('gantt_audit_logs_v1', state.auditLogs);
+    }
+
+    async function syncMasterDataToCloud(detailZh, detailEn) {
+      saveStorage('gantt_catalog_products_v1', state.catalogProducts);
+      saveStorage('gantt_shipping_table_v1', state.shippingTable);
+      recordAuditLog('admin', '全局基础总表', detailZh, detailEn);
+      try {
+        const res = await fetch(CLOUD_API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'saveMaster',
+            adminPin: state.adminPin,
+            operator: state.operatorName || 'Admin',
+            catalogProducts: state.catalogProducts,
+            shippingTable: state.shippingTable,
+            detailZh,
+            detailEn
+          })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.ok && json.data) {
+            state.kvConnected = true;
+            state.auditLogs = json.data.auditLogs || state.auditLogs;
+            saveStorage('gantt_audit_logs_v1', state.auditLogs);
+          }
+        }
+      } catch (e) {
+        // Fallback to localStorage seamlessly when offline or in Canvas preview
+      }
+    }
+
+    function renderCatalogProductsView() {
+      const tbody = document.getElementById('catalogProductsTbody');
+      const d = I18N[state.lang];
+      const disAttr = state.isAdmin ? '' : 'disabled';
+      const disCls = state.isAdmin ? 'bg-white' : 'bg-slate-100 text-slate-500 cursor-not-allowed';
+      tbody.innerHTML = '';
+
+      state.catalogProducts.forEach((prod, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3">
+            <input type="text" ${disAttr} data-idx="${idx}" data-field="nameZh" value="${prod.nameZh}" class="cat-prod-inp w-full rounded border border-slate-300 px-2.5 py-1 text-xs font-medium ${disCls}" />
+          </td>
+          <td class="py-2.5 px-3">
+            <input type="text" ${disAttr} data-idx="${idx}" data-field="nameEn" value="${prod.nameEn}" class="cat-prod-inp w-full rounded border border-slate-300 px-2.5 py-1 text-xs ${disCls}" />
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <input type="number" ${disAttr} min="0" max="365" data-idx="${idx}" data-field="prepDays" value="${prod.prepDays}" class="cat-prod-inp w-20 text-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-indigo-700 ${disCls}" />
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <input type="number" ${disAttr} min="0" max="365" data-idx="${idx}" data-field="testDays" value="${prod.testDays}" class="cat-prod-inp w-20 text-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-emerald-700 ${disCls}" />
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <input type="number" ${disAttr} min="0" max="365" data-idx="${idx}" data-field="installDays" value="${prod.installDays}" class="cat-prod-inp w-20 text-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-violet-700 ${disCls}" />
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            <button type="button" ${disAttr} data-idx="${idx}" class="cat-prod-del text-xs ${state.isAdmin ? 'text-rose-600 hover:underline' : 'text-slate-300 cursor-not-allowed'}">${d.btnDelete}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (!state.isAdmin) return;
+
+      tbody.querySelectorAll('.cat-prod-inp').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const idx = Number(e.target.getAttribute('data-idx'));
+          const field = e.target.getAttribute('data-field');
+          const oldVal = state.catalogProducts[idx][field];
+          const val = field.includes('Days') ? Math.max(0, Number(e.target.value) || 0) : e.target.value;
+          state.catalogProducts[idx][field] = val;
+          const pName = state.catalogProducts[idx].nameZh;
+          syncCatalogToProjectItems();
+          syncMasterDataToCloud(
+            `管理员修改常规产品【${pName}】的 ${field}：${oldVal} → ${val}`,
+            `Admin updated product [${state.catalogProducts[idx].nameEn}] ${field}: ${oldVal} → ${val}`
+          );
+          renderAll();
+          showToast(I18N[state.lang].toastSaved);
+        });
+      });
+
+      tbody.querySelectorAll('.cat-prod-del').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = Number(e.target.getAttribute('data-idx'));
+          if (state.catalogProducts.length <= 1) return;
+          const removed = state.catalogProducts.splice(idx, 1)[0];
+          initProjectItemsFromCatalog();
+          syncMasterDataToCloud(
+            `管理员删除了常规产品【${removed.nameZh}】`,
+            `Admin deleted standard product [${removed.nameEn}]`
+          );
+          renderAll();
+        });
+      });
+    }
+
+    function syncCatalogToProjectItems() {
+      state.catalogProducts.forEach(cat => {
+        const match = state.projectItems.find(p => p.catalogId === cat.id);
+        if (match) {
+          match.nameZh = cat.nameZh;
+          match.nameEn = cat.nameEn;
+          match.prepDays = Number(cat.prepDays);
+          match.testDays = Number(cat.testDays);
+          match.installDays = Number(cat.installDays);
+        } else {
+          state.projectItems.push({
+            uid: 'item_' + cat.id + '_' + Date.now(),
+            catalogId: cat.id,
+            selected: true,
+            qty: 1,
+            nameZh: cat.nameZh,
+            nameEn: cat.nameEn,
+            prepDays: Number(cat.prepDays),
+            testDays: Number(cat.testDays),
+            installDays: Number(cat.installDays)
+          });
+        }
+      });
+    }
+
+    function renderShippingCatalogView() {
+      const tbody = document.getElementById('shippingCatalogTbody');
+      const regionFilter = document.getElementById('filterRegionSelect').value;
+      const d = I18N[state.lang];
+      const disAttr = state.isAdmin ? '' : 'disabled';
+      const disCls = state.isAdmin ? 'bg-white' : 'bg-slate-100 text-slate-500 cursor-not-allowed';
+      tbody.innerHTML = '';
+
+      state.shippingTable.forEach((row, idx) => {
+        if (regionFilter !== 'ALL' && row.region !== regionFilter) return;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="py-2 px-3">
+            <select ${disAttr} data-idx="${idx}" data-field="region" class="ship-cat-inp rounded border border-slate-300 px-2 py-1 text-xs ${disCls}">
+              <option value="Asia" ${row.region === 'Asia' ? 'selected' : ''}>Asia (2d)</option>
+              <option value="Americas" ${row.region === 'Americas' ? 'selected' : ''}>Americas (4-5d)</option>
+              <option value="Europe" ${row.region === 'Europe' ? 'selected' : ''}>Europe (4-5d)</option>
+              <option value="Oceania" ${row.region === 'Oceania' ? 'selected' : ''}>Oceania (4-5d)</option>
+            </select>
+          </td>
+          <td class="py-2 px-3">
+            <input type="text" ${disAttr} data-idx="${idx}" data-field="nameZh" value="${row.nameZh}" class="ship-cat-inp w-full rounded border border-slate-300 px-2 py-1 text-xs font-medium ${disCls}" />
+          </td>
+          <td class="py-2 px-3">
+            <input type="text" ${disAttr} data-idx="${idx}" data-field="nameEn" value="${row.nameEn}" class="ship-cat-inp w-full rounded border border-slate-300 px-2 py-1 text-xs ${disCls}" />
+          </td>
+          <td class="py-2 px-3 text-center">
+            <input type="number" ${disAttr} min="0" max="180" data-idx="${idx}" data-field="shippingDays" value="${row.shippingDays}" class="ship-cat-inp w-20 text-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-sky-700 ${disCls}" />
+          </td>
+          <td class="py-2 px-3 text-center">
+            <input type="number" ${disAttr} min="0" max="30" data-idx="${idx}" data-field="travelDays" value="${row.travelDays}" class="ship-cat-inp w-20 text-center rounded border border-slate-300 px-2 py-1 text-xs font-semibold text-amber-700 ${disCls}" />
+          </td>
+          <td class="py-2 px-3">
+            <input type="text" ${disAttr} data-idx="${idx}" data-field="noteZh" value="${row.noteZh || ''}" class="ship-cat-inp w-full rounded border border-slate-300 px-2 py-1 text-xs text-slate-600 ${disCls}" />
+          </td>
+          <td class="py-2 px-3 text-right">
+            <button type="button" ${disAttr} data-idx="${idx}" class="ship-cat-del text-xs ${state.isAdmin ? 'text-rose-600 hover:underline' : 'text-slate-300 cursor-not-allowed'}">${d.btnDelete}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (!state.isAdmin) return;
+
+      tbody.querySelectorAll('.ship-cat-inp').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const idx = Number(e.target.getAttribute('data-idx'));
+          const field = e.target.getAttribute('data-field');
+          const oldVal = state.shippingTable[idx][field];
+          const val = field.includes('Days') ? Math.max(0, Number(e.target.value) || 0) : e.target.value;
+          state.shippingTable[idx][field] = val;
+
+          const curr = state.shippingTable[idx];
+          if (curr && curr.id === state.selectedCountryId) {
+            state.shippingDays = curr.shippingDays;
+            state.travelDays = curr.travelDays;
+            document.getElementById('inputShippingDays').value = state.shippingDays;
+            document.getElementById('inputTravelDays').value = state.travelDays;
+          }
+          syncMasterDataToCloud(
+            `管理员更新国家【${curr.nameZh}】的 ${field}：${oldVal} → ${val}`,
+            `Admin updated country [${curr.nameEn}] ${field}: ${oldVal} → ${val}`
+          );
+          renderAll();
+          showToast(I18N[state.lang].toastSaved);
+        });
+      });
+
+      tbody.querySelectorAll('.ship-cat-del').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const idx = Number(e.target.getAttribute('data-idx'));
+          if (state.shippingTable.length <= 1) return;
+          const removed = state.shippingTable.splice(idx, 1)[0];
+          if (!state.shippingTable.some(c => c.id === state.selectedCountryId)) {
+            state.selectedCountryId = state.shippingTable[0].id;
+          }
+          syncMasterDataToCloud(
+            `管理员删除了目的国家【${removed.nameZh}】`,
+            `Admin deleted country [${removed.nameEn}]`
+          );
+          renderAll();
+        });
+      });
+    }
+
+    // =========================================================================
+    // 8. TAB SWITCHING & EVENT LISTENERS
+    // =========================================================================
+    function formatDateTimeDisplay(isoStr) {
+      if (!isoStr) return '--';
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return isoStr;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${day} ${hh}:${mm}`;
+    }
+
+    function loadProjectSnapshot(snap, projId) {
+      if (!snap) return;
+      state.currentProjectId = projId || null;
+      state.projectName = snap.projectName || '';
+      document.getElementById('inputProjectName').value = state.projectName;
+      state.calcMode = snap.calcMode || 'backward';
+      document.getElementById('selectCalcMode').value = state.calcMode;
+      state.anchorDate = snap.anchorDate || getDefaultAnchorDateStr();
+      document.getElementById('inputAnchorDate').value = state.anchorDate;
+      state.selectedCountryId = snap.selectedCountryId || 'us_west';
+      state.shippingDays = Number(snap.shippingDays ?? 20);
+      state.travelDays = Number(snap.travelDays ?? 4);
+      document.getElementById('inputShippingDays').value = state.shippingDays;
+      document.getElementById('inputTravelDays').value = state.travelDays;
+      state.travelMode = snap.travelMode || 'split';
+      document.getElementById('selectTravelMode').value = state.travelMode;
+      state.manualOverride = snap.manualOverride ? JSON.parse(JSON.stringify(snap.manualOverride)) : { prep: null, test: null, install: null };
+      if (Array.isArray(snap.projectItems)) {
+        state.projectItems = JSON.parse(JSON.stringify(snap.projectItems));
+      }
+      renderAll();
+      switchTab('planner');
+      showToast(state.lang === 'zh' ? `已加载项目排期：${state.projectName}` : `Loaded schedule: ${state.projectName}`);
+    }
+
+    function openRevisionsModal(projectId) {
+      const proj = state.sharedProjects.find(p => p.id === projectId);
+      if (!proj) return;
+      const d = I18N[state.lang];
+      const modal = document.getElementById('modalRevisions');
+      document.getElementById('modalRevTitle').textContent = state.lang === 'zh'
+        ? `历史版本与修改记录 — ${proj.projectName}`
+        : `Revision History — ${proj.projectName}`;
+      document.getElementById('modalRevSubtitle').textContent = state.lang === 'zh'
+        ? `共保存了 ${(proj.revisions || []).length} 个历史版本，点击「回滚到此版本」可恢复当时的排期参数。`
+        : `${(proj.revisions || []).length} versions stored. Click Restore to load any historical version.`;
+
+      const listEl = document.getElementById('modalRevList');
+      listEl.innerHTML = '';
+
+      (proj.revisions || []).forEach(rev => {
+        const card = document.createElement('div');
+        card.className = 'p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3';
+        const noteText = state.lang === 'zh' ? (rev.noteZh || rev.noteEn) : (rev.noteEn || rev.noteZh);
+        const snap = rev.snapshot || {};
+        card.innerHTML = `
+          <div class="space-y-1 flex-1 min-w-[220px]">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-indigo-600 text-white text-[11px] font-bold">v${rev.version}</span>
+              <span class="text-xs font-bold text-slate-800">${rev.operator || '成员'}</span>
+              <span class="text-[11px] text-slate-400 font-mono">${formatDateTimeDisplay(rev.timestamp)}</span>
+            </div>
+            <div class="text-xs text-slate-700">${noteText}</div>
+            <div class="text-[11px] text-slate-500 font-mono">
+              ${snap.startDateStr || '--'} → ${snap.endDateStr || '--'} (${snap.totalDays || 0}${d.dayUnit})
+            </div>
+          </div>
+          <button type="button" data-rev-id="${rev.revId}" class="btn-restore-rev px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition">
+            ${d.btnRestoreRev}
+          </button>
+        `;
+        listEl.appendChild(card);
+
+        card.querySelector('.btn-restore-rev').addEventListener('click', () => {
+          loadProjectSnapshot(rev.snapshot, proj.id);
+          modal.classList.add('hidden');
+        });
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    async function saveCurrentScheduleToCloud(forceNew) {
+      const sched = computeSchedule();
+      const projName = (document.getElementById('inputProjectName').value || '未命名排期项目').trim();
+      const operator = (document.getElementById('inputOperatorName').value || '张工').trim();
+      state.operatorName = operator;
+      const customNote = (document.getElementById('inputChangeNote').value || '').trim();
+
+      const targetId = (!forceNew && state.currentProjectId) ? state.currentProjectId : ('proj_' + Date.now());
+      state.currentProjectId = targetId;
+
+      const existingIdx = state.sharedProjects.findIndex(p => p.id === targetId);
+      const nextVersion = existingIdx >= 0 ? ((Number(state.sharedProjects[existingIdx].version) || 1) + 1) : 1;
+      const nowIso = new Date().toISOString();
+
+      const activeSummaryZh = sched.activeItems.map(i => `${i.nameZh}×${i.qty}`).join(' + ');
+      const activeSummaryEn = sched.activeItems.map(i => `${i.nameEn}x${i.qty}`).join(' + ');
+
+      const defaultNoteZh = existingIdx >= 0
+        ? `更新排期至 v${nextVersion}：${activeSummaryZh}（总计 ${sched.totalDays} 天）`
+        : `创建共享排期 v1：${activeSummaryZh}（总计 ${sched.totalDays} 天）`;
+      const defaultNoteEn = existingIdx >= 0
+        ? `Updated to v${nextVersion}: ${activeSummaryEn} (${sched.totalDays}d total)`
+        : `Created v1: ${activeSummaryEn} (${sched.totalDays}d total)`;
+
+      const noteZh = customNote || defaultNoteZh;
+      const noteEn = customNote || defaultNoteEn;
+
+      const snapshotData = {
+        projectName: projName,
+        calcMode: state.calcMode,
+        anchorDate: state.anchorDate,
+        selectedCountryId: state.selectedCountryId,
+        shippingDays: sched.finalShip,
+        travelDays: sched.finalTravel,
+        travelMode: state.travelMode,
+        manualOverride: JSON.parse(JSON.stringify(state.manualOverride)),
+        projectItems: JSON.parse(JSON.stringify(state.projectItems)),
+        startDateStr: formatDateISO(sched.projectStartDate),
+        endDateStr: formatDateISO(sched.projectEndDate),
+        totalDays: sched.totalDays
+      };
+
+      const revEntry = {
+        revId: 'rev_' + Date.now(),
+        version: nextVersion,
+        timestamp: nowIso,
+        operator,
+        noteZh,
+        noteEn,
+        snapshot: snapshotData
+      };
+
+      let projRecord;
+      if (existingIdx >= 0) {
+        projRecord = state.sharedProjects[existingIdx];
+        projRecord.projectName = projName;
+        projRecord.version = nextVersion;
+        projRecord.updatedAt = nowIso;
+        projRecord.updatedBy = operator;
+        Object.assign(projRecord, snapshotData);
+        projRecord.revisions = Array.isArray(projRecord.revisions) ? projRecord.revisions : [];
+        projRecord.revisions.unshift(revEntry);
+      } else {
+        projRecord = {
+          id: targetId,
+          version: 1,
+          updatedAt: nowIso,
+          updatedBy: operator,
+          ...snapshotData,
+          revisions: [revEntry]
+        };
+        state.sharedProjects.unshift(projRecord);
+      }
+
+      saveStorage('gantt_shared_projects_v1', state.sharedProjects);
+      recordAuditLog(
+        'project',
+        projName,
+        `${operator} 保存了【${projName}】(v${nextVersion})：${noteZh}`,
+        `${operator} saved [${projName}] (v${nextVersion}): ${noteEn}`
+      );
+
+      document.getElementById('inputChangeNote').value = '';
+
+      // Sync to Cloudflare Pages Function /api/data if available
+      try {
+        const res = await fetch(CLOUD_API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'saveProject',
+            operator,
+            changeNoteZh: noteZh,
+            changeNoteEn: noteEn,
+            project: projRecord
+          })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.ok && json.data) {
+            state.kvConnected = true;
+            state.sharedProjects = json.data.sharedProjects || state.sharedProjects;
+            state.auditLogs = json.data.auditLogs || state.auditLogs;
+            saveStorage('gantt_shared_projects_v1', state.sharedProjects);
+            saveStorage('gantt_audit_logs_v1', state.auditLogs);
+          }
+        }
+      } catch (e) {
+        // Offline / Canvas fallback already saved in state & localStorage
+      }
+
+      renderAll();
+      showToast(state.lang === 'zh'
+        ? `已保存「${projName} (v${nextVersion})」至共享历史列表并记录日志！`
+        : `Saved "${projName} (v${nextVersion})" to shared history!`);
+    }
+
+    function renderSharedHistoryAndLogsView() {
+      const d = I18N[state.lang];
+      const quickContainer = document.getElementById('quickSharedProjectsContainer');
+      const fullTbody = document.getElementById('sharedProjectsTbody');
+      const logsTbody = document.getElementById('auditLogsTbody');
+      const searchKw = (document.getElementById('inputSearchProjects')?.value || '').trim().toLowerCase();
+      const logFilter = document.getElementById('filterAuditType')?.value || 'ALL';
+
+      // 1. Render Quick Cards on Planner Page
+      if (quickContainer) {
+        quickContainer.innerHTML = '';
+        state.sharedProjects.slice(0, 6).forEach(proj => {
+          const cObj = state.shippingTable.find(c => c.id === proj.selectedCountryId);
+          const cName = cObj ? (state.lang === 'zh' ? cObj.nameZh : cObj.nameEn) : proj.selectedCountryId;
+          const itemsTxt = (proj.projectItems || [])
+            .filter(i => i.selected && Number(i.qty) > 0)
+            .map(i => `${state.lang === 'zh' ? i.nameZh : i.nameEn}×${i.qty}`)
+            .join('、') || '--';
+          const lastRev = (proj.revisions && proj.revisions[0]) ? (state.lang === 'zh' ? proj.revisions[0].noteZh : proj.revisions[0].noteEn) : '';
+          const isCurrent = proj.id === state.currentProjectId;
+
+          const card = document.createElement('div');
+          card.className = `p-3.5 rounded-xl border transition flex flex-col justify-between gap-2.5 ${isCurrent ? 'border-indigo-500 bg-indigo-50/30' : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'}`;
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold shrink-0">v${proj.version || 1}</span>
+                  <span class="font-bold text-slate-900 text-xs sm:text-sm truncate">${proj.projectName}</span>
+                </div>
+                <span class="text-[11px] font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shrink-0">${proj.totalDays || 0}${d.dayUnit}</span>
+              </div>
+              <div class="mt-1.5 text-xs text-slate-600 flex flex-wrap gap-x-3 gap-y-1">
+                <span>🌍 ${cName} (${proj.shippingDays}d/${proj.travelDays}d)</span>
+                <span class="font-mono text-[11px]">📅 ${proj.startDateStr} → ${proj.endDateStr}</span>
+              </div>
+              <div class="mt-1 text-[11px] text-slate-500 truncate">📦 ${itemsTxt}</div>
+              <div class="mt-1 text-[11px] text-slate-400 truncate">✍️ ${proj.updatedBy || '--'} · ${formatDateTimeDisplay(proj.updatedAt)} · ${lastRev}</div>
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200/70">
+              <button type="button" data-id="${proj.id}" class="q-rev-btn px-2.5 py-1 rounded text-[11px] font-medium bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">
+                🕒 ${d.btnViewRevs} (${(proj.revisions || []).length})
+              </button>
+              <button type="button" data-id="${proj.id}" class="q-load-btn px-3 py-1 rounded text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                ${d.btnLoadEdit}
+              </button>
+            </div>
+          `;
+          quickContainer.appendChild(card);
+        });
+
+        quickContainer.querySelectorAll('.q-load-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const p = state.sharedProjects.find(x => x.id === id);
+            if (p) loadProjectSnapshot(p, p.id);
+          });
+        });
+
+        quickContainer.querySelectorAll('.q-rev-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            openRevisionsModal(id);
+          });
+        });
+      }
+
+      // 2. Render Full Shared Projects Table in History View
+      if (fullTbody) {
+        fullTbody.innerHTML = '';
+        state.sharedProjects.forEach(proj => {
+          const cObj = state.shippingTable.find(c => c.id === proj.selectedCountryId);
+          const cName = cObj ? (state.lang === 'zh' ? cObj.nameZh : cObj.nameEn) : proj.selectedCountryId;
+          if (searchKw && !proj.projectName.toLowerCase().includes(searchKw) && !String(cName).toLowerCase().includes(searchKw)) {
+            return;
+          }
+          const itemsTxt = (proj.projectItems || [])
+            .filter(i => i.selected && Number(i.qty) > 0)
+            .map(i => `${state.lang === 'zh' ? i.nameZh : i.nameEn}×${i.qty}`)
+            .join('、') || '--';
+          const lastRev = (proj.revisions && proj.revisions[0]) ? (state.lang === 'zh' ? proj.revisions[0].noteZh : proj.revisions[0].noteEn) : '';
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50';
+          tr.innerHTML = `
+            <td class="py-3 px-3">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-bold">v${proj.version || 1}</span>
+                <span class="font-bold text-slate-900 text-xs sm:text-sm">${proj.projectName}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-xs text-slate-700">
+              <div class="font-medium">${cName}</div>
+              <div class="text-[11px] text-slate-400">船期 ${proj.shippingDays}d / 差旅 ${proj.travelDays}d</div>
+            </td>
+            <td class="py-3 px-3 text-xs text-slate-600 max-w-xs truncate" title="${itemsTxt}">
+              ${itemsTxt}
+            </td>
+            <td class="py-3 px-3 text-center font-mono text-xs text-slate-700">
+              <div>${proj.startDateStr} → ${proj.endDateStr}</div>
+              <span class="text-[11px] font-bold text-indigo-600">${proj.totalDays}${d.dayUnit}</span>
+            </td>
+            <td class="py-3 px-3 text-xs">
+              <div class="font-semibold text-slate-800">${proj.updatedBy || '--'} <span class="font-normal text-[11px] text-slate-400 font-mono">${formatDateTimeDisplay(proj.updatedAt)}</span></div>
+              <div class="text-[11px] text-slate-500 truncate max-w-xs" title="${lastRev}">${lastRev}</div>
+            </td>
+            <td class="py-3 px-3 text-right space-x-1.5 whitespace-nowrap">
+              <button type="button" data-id="${proj.id}" class="f-load-btn px-2.5 py-1 rounded text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700">${d.btnLoadEdit}</button>
+              <button type="button" data-id="${proj.id}" class="f-rev-btn px-2.5 py-1 rounded text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200">${d.btnViewRevs} (${(proj.revisions || []).length})</button>
+              <button type="button" data-id="${proj.id}" class="f-del-btn px-2 py-1 rounded text-xs ${state.isAdmin ? 'text-rose-600 hover:bg-rose-50' : 'text-slate-300 cursor-not-allowed'}">${d.btnDelete}</button>
+            </td>
+          `;
+          fullTbody.appendChild(tr);
+        });
+
+        fullTbody.querySelectorAll('.f-load-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const p = state.sharedProjects.find(x => x.id === id);
+            if (p) loadProjectSnapshot(p, p.id);
+          });
+        });
+
+        fullTbody.querySelectorAll('.f-rev-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            openRevisionsModal(id);
+          });
+        });
+
+        fullTbody.querySelectorAll('.f-del-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            if (!state.isAdmin) {
+              document.getElementById('modalAdminAuth').classList.remove('hidden');
+              return;
+            }
+            const id = e.currentTarget.getAttribute('data-id');
+            const target = state.sharedProjects.find(x => x.id === id);
+            if (!target) return;
+            state.sharedProjects = state.sharedProjects.filter(x => x.id !== id);
+            if (state.currentProjectId === id) state.currentProjectId = null;
+            saveStorage('gantt_shared_projects_v1', state.sharedProjects);
+            recordAuditLog('admin', target.projectName, `管理员删除了共享排期项目：${target.projectName}`, `Admin deleted shared project: ${target.projectName}`);
+            try {
+              await fetch(CLOUD_API_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deleteProject', projectId: id, adminPin: state.adminPin, operator: state.operatorName })
+              });
+            } catch (err) {}
+            renderAll();
+          });
+        });
+      }
+
+      // 3. Render Global Audit Logs Table
+      if (logsTbody) {
+        logsTbody.innerHTML = '';
+        state.auditLogs.forEach(log => {
+          if (logFilter !== 'ALL' && log.category !== logFilter) return;
+          const isProj = log.category === 'project';
+          const badgeHtml = isProj
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">${state.lang === 'zh' ? '排期变更' : 'Schedule'}</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">${state.lang === 'zh' ? '管理员维护' : 'Admin'}</span>`;
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50';
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500 whitespace-nowrap">${formatDateTimeDisplay(log.timestamp)}</td>
+            <td class="py-2.5 px-3 font-semibold text-slate-800 whitespace-nowrap">${log.operator || '--'}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">${badgeHtml}</td>
+            <td class="py-2.5 px-3 text-slate-700">${state.lang === 'zh' ? (log.detailZh || log.detailEn) : (log.detailEn || log.detailZh)}</td>
+          `;
+          logsTbody.appendChild(tr);
+        });
+      }
+    }
+
+    async function fetchCloudStoreOnInit() {
+      try {
+        const res = await fetch(CLOUD_API_ENDPOINT, { method: 'GET', headers: { 'Accept': 'application/json' } });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json && json.ok && json.kvBound) {
+          state.kvConnected = true;
+          if (json.data) {
+            if (Array.isArray(json.data.catalogProducts) && json.data.catalogProducts.length > 0) {
+              state.catalogProducts = json.data.catalogProducts;
+              saveStorage('gantt_catalog_products_v1', state.catalogProducts);
+            }
+            if (Array.isArray(json.data.shippingTable) && json.data.shippingTable.length > 0) {
+              state.shippingTable = json.data.shippingTable;
+              saveStorage('gantt_shipping_table_v1', state.shippingTable);
+            }
+            if (Array.isArray(json.data.sharedProjects)) {
+              state.sharedProjects = json.data.sharedProjects;
+              saveStorage('gantt_shared_projects_v1', state.sharedProjects);
+            }
+            if (Array.isArray(json.data.auditLogs)) {
+              state.auditLogs = json.data.auditLogs;
+              saveStorage('gantt_audit_logs_v1', state.auditLogs);
+            }
+          }
+          renderAll();
+        }
+      } catch (e) {
+        // Offline or in Canvas preview mode
+      }
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      const views = {
+        planner: document.getElementById('viewPlanner'),
+        history: document.getElementById('viewHistory'),
+        products: document.getElementById('viewProducts'),
+        shipping: document.getElementById('viewShipping')
+      };
+      Object.keys(views).forEach(k => {
+        if (views[k]) {
+          if (k === tabName) views[k].classList.remove('hidden');
+          else views[k].classList.add('hidden');
+        }
+      });
+
+      const deskBtns = {
+        planner: document.getElementById('tabBtnPlanner'),
+        history: document.getElementById('tabBtnHistory'),
+        products: document.getElementById('tabBtnProducts'),
+        shipping: document.getElementById('tabBtnShipping')
+      };
+      const mobBtns = {
+        planner: document.getElementById('mobTabPlanner'),
+        history: document.getElementById('mobTabHistory'),
+        products: document.getElementById('mobTabProducts'),
+        shipping: document.getElementById('mobTabShipping')
+      };
+
+      Object.keys(deskBtns).forEach(k => {
+        if (!deskBtns[k] || !mobBtns[k]) return;
+        if (k === tabName) {
+          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-indigo-600 text-white shadow flex items-center gap-1';
+          mobBtns[k].className = 'flex-1 py-1.5 rounded text-xs font-medium text-center bg-indigo-600 text-white';
+        } else {
+          deskBtns[k].className = 'px-3 py-1.5 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center gap-1';
+          mobBtns[k].className = 'flex-1 py-1.5 rounded text-xs font-medium text-center text-slate-300';
+        }
+      });
+    }
+
+    function renderAll() {
+      applyTranslations();
+      renderCountrySelector();
+      renderProjectProductsTable();
+      updateCalculationsAndGantt();
+      renderCatalogProductsView();
+      renderShippingCatalogView();
+      renderSharedHistoryAndLogsView();
+    }
+
+    function initEvents() {
+      const projNameInp = document.getElementById('inputProjectName');
+      if (state.projectName) projNameInp.value = state.projectName;
+      projNameInp.addEventListener('input', (e) => {
+        state.projectName = e.target.value;
+        saveWorkspaceState();
+      });
+      document.getElementById('selectCalcMode').value = state.calcMode;
+      document.getElementById('selectTravelMode').value = state.travelMode;
+      document.getElementById('chkShowSubtasks').checked = state.showSubtasks;
+
+      // Operator Name input
+      const opInp = document.getElementById('inputOperatorName');
+      if (opInp) {
+        opInp.value = state.operatorName || '张工';
+        opInp.addEventListener('input', (e) => {
+          state.operatorName = e.target.value;
+          saveWorkspaceState();
+        });
+      }
+
+      // Tab navigation
+      document.getElementById('tabBtnPlanner').addEventListener('click', () => switchTab('planner'));
+      document.getElementById('tabBtnHistory').addEventListener('click', () => switchTab('history'));
+      document.getElementById('tabBtnProducts').addEventListener('click', () => switchTab('products'));
+      document.getElementById('tabBtnShipping').addEventListener('click', () => switchTab('shipping'));
+      document.getElementById('mobTabPlanner').addEventListener('click', () => switchTab('planner'));
+      document.getElementById('mobTabHistory').addEventListener('click', () => switchTab('history'));
+      document.getElementById('mobTabProducts').addEventListener('click', () => switchTab('products'));
+      document.getElementById('mobTabShipping').addEventListener('click', () => switchTab('shipping'));
+      document.getElementById('btnJumpShippingTable').addEventListener('click', () => switchTab('shipping'));
+      document.getElementById('btnJumpFullHistory').addEventListener('click', () => switchTab('history'));
+
+      // Cloud Save & History Controls
+      document.getElementById('btnSaveCloudProject').addEventListener('click', () => saveCurrentScheduleToCloud(false));
+      document.getElementById('btnSaveAsNewProject').addEventListener('click', () => saveCurrentScheduleToCloud(true));
+      document.getElementById('btnRefreshCloud').addEventListener('click', () => {
+        fetchCloudStoreOnInit();
+        renderAll();
+        showToast(state.lang === 'zh' ? '已刷新同步最新云端排期与修改记录！' : 'Synced latest schedules & logs!');
+      });
+      document.getElementById('inputSearchProjects').addEventListener('input', () => renderSharedHistoryAndLogsView());
+      document.getElementById('filterAuditType').addEventListener('change', () => renderSharedHistoryAndLogsView());
+
+      // Revisions Modal close
+      const modalRev = document.getElementById('modalRevisions');
+      document.getElementById('btnCloseRevModal').addEventListener('click', () => modalRev.classList.add('hidden'));
+      document.getElementById('btnConfirmRevModal').addEventListener('click', () => modalRev.classList.add('hidden'));
+
+      // Admin Mode Authentication Modal
+      const modalAdmin = document.getElementById('modalAdminAuth');
+      const errAdmin = document.getElementById('adminAuthError');
+      function handleAdminToggleClick() {
+        if (state.isAdmin) {
+          state.isAdmin = false;
+          renderAll();
+          showToast(state.lang === 'zh' ? '已退出管理员模式，总表切换为只读保护状态' : 'Admin Mode locked');
+        } else {
+          errAdmin.classList.add('hidden');
+          modalAdmin.classList.remove('hidden');
+        }
+      }
+      document.getElementById('btnAdminToggle').addEventListener('click', handleAdminToggleClick);
+      document.getElementById('btnUnlockFromProducts').addEventListener('click', handleAdminToggleClick);
+      document.getElementById('btnUnlockFromShipping').addEventListener('click', handleAdminToggleClick);
+      document.getElementById('btnCloseAdminModal').addEventListener('click', () => modalAdmin.classList.add('hidden'));
+      document.getElementById('btnCancelAdminModal').addEventListener('click', () => modalAdmin.classList.add('hidden'));
+      document.getElementById('btnSubmitAdminPin').addEventListener('click', () => {
+        const pinVal = (document.getElementById('inputAdminPin').value || '').trim();
+        if (pinVal === state.adminPin || pinVal === 'admin888') {
+          state.isAdmin = true;
+          state.adminPin = pinVal;
+          modalAdmin.classList.add('hidden');
+          renderAll();
+          showToast(state.lang === 'zh' ? '✅ 管理员身份验证通过！现在可维护产品库与各国船期总表' : '✅ Admin Mode Unlocked!');
+        } else {
+          errAdmin.classList.remove('hidden');
+        }
+      });
+
+      // Language toggle
+      document.getElementById('btnLangToggle').addEventListener('click', () => {
+        state.lang = state.lang === 'zh' ? 'en' : 'zh';
+        renderAll();
+      });
+
+      // Deploy guide modal
+      const modalDeploy = document.getElementById('modalDeploy');
+      document.getElementById('btnDeployGuide').addEventListener('click', () => modalDeploy.classList.remove('hidden'));
+      document.getElementById('btnCloseDeployModal').addEventListener('click', () => modalDeploy.classList.add('hidden'));
+      document.getElementById('btnConfirmDeployModal').addEventListener('click', () => modalDeploy.classList.add('hidden'));
+
+      // Calc mode & Anchor Date
+      document.getElementById('selectCalcMode').addEventListener('change', (e) => {
+        state.calcMode = e.target.value;
+        applyTranslations();
+        updateCalculationsAndGantt();
+      });
+
+      const anchorInp = document.getElementById('inputAnchorDate');
+      anchorInp.value = state.anchorDate;
+      anchorInp.addEventListener('change', (e) => {
+        if (e.target.value) {
+          state.anchorDate = e.target.value;
+          updateCalculationsAndGantt();
+        }
+      });
+
+      // Country selection
+      document.getElementById('selectCountry').addEventListener('change', (e) => {
+        state.selectedCountryId = e.target.value;
+        const found = state.shippingTable.find(c => c.id === state.selectedCountryId);
+        if (found) {
+          state.shippingDays = Number(found.shippingDays);
+          state.travelDays = Number(found.travelDays);
+          document.getElementById('inputShippingDays').value = state.shippingDays;
+          document.getElementById('inputTravelDays').value = state.travelDays;
+        }
+        renderCountrySelector();
+        updateCalculationsAndGantt();
+      });
+
+      // Shipping & Travel manual inputs
+      const shipInp = document.getElementById('inputShippingDays');
+      const travelInp = document.getElementById('inputTravelDays');
+      shipInp.value = state.shippingDays;
+      travelInp.value = state.travelDays;
+
+      shipInp.addEventListener('input', (e) => {
+        state.shippingDays = Math.max(0, Number(e.target.value) || 0);
+        updateCalculationsAndGantt();
+      });
+
+      travelInp.addEventListener('input', (e) => {
+        state.travelDays = Math.max(0, Number(e.target.value) || 0);
+        updateCalculationsAndGantt();
+      });
+
+      // Quick travel buttons (2d Asia, 4d/5d Europe/Americas/Oceania)
+      document.getElementById('btnQuickAsia').addEventListener('click', () => {
+        state.travelDays = 2;
+        travelInp.value = 2;
+        updateCalculationsAndGantt();
+      });
+      document.getElementById('btnQuickLong4').addEventListener('click', () => {
+        state.travelDays = 4;
+        travelInp.value = 4;
+        updateCalculationsAndGantt();
+      });
+      document.getElementById('btnQuickLong5').addEventListener('click', () => {
+        state.travelDays = 5;
+        travelInp.value = 5;
+        updateCalculationsAndGantt();
+      });
+
+      // Travel split mode
+      document.getElementById('selectTravelMode').addEventListener('change', (e) => {
+        state.travelMode = e.target.value;
+        updateCalculationsAndGantt();
+      });
+
+      // Manual overrides on consolidated cards
+      document.getElementById('overridePrepDays').addEventListener('input', (e) => {
+        state.manualOverride.prep = Math.max(0, Number(e.target.value) || 0);
+        updateCalculationsAndGantt();
+      });
+      document.getElementById('overrideTestDays').addEventListener('input', (e) => {
+        state.manualOverride.test = Math.max(0, Number(e.target.value) || 0);
+        updateCalculationsAndGantt();
+      });
+      document.getElementById('overrideInstallDays').addEventListener('input', (e) => {
+        state.manualOverride.install = Math.max(0, Number(e.target.value) || 0);
+        updateCalculationsAndGantt();
+      });
+
+      // Add custom row in project planner
+      document.getElementById('btnAddCustomRow').addEventListener('click', () => {
+        const count = state.projectItems.length + 1;
+        state.projectItems.push({
+          uid: 'custom_' + Date.now(),
+          catalogId: null,
+          selected: true,
+          qty: 1,
+          nameZh: `自定义设备 #${count}`,
+          nameEn: `Custom Unit #${count}`,
+          prepDays: 15,
+          testDays: 3,
+          installDays: 3
+        });
+        clearManualOverrides();
+        renderAll();
+      });
+
+      // Reset product parameters in planner
+      document.getElementById('btnResetProductParams').addEventListener('click', () => {
+        initProjectItemsFromCatalog();
+        clearManualOverrides();
+        renderAll();
+        showToast(I18N[state.lang].toastReset);
+      });
+
+      // Reset entire schedule
+      document.getElementById('btnResetDefaults').addEventListener('click', () => {
+        state.currentProjectId = null;
+        state.calcMode = 'backward';
+        document.getElementById('selectCalcMode').value = 'backward';
+        state.anchorDate = getDefaultAnchorDateStr();
+        document.getElementById('inputAnchorDate').value = state.anchorDate;
+        state.selectedCountryId = 'us_west';
+        const c = state.shippingTable.find(x => x.id === 'us_west') || state.shippingTable[0];
+        state.shippingDays = c.shippingDays;
+        state.travelDays = c.travelDays;
+        document.getElementById('inputShippingDays').value = state.shippingDays;
+        document.getElementById('inputTravelDays').value = state.travelDays;
+        initProjectItemsFromCatalog();
+        clearManualOverrides();
+        renderAll();
+        showToast(I18N[state.lang].toastReset);
+      });
+
+      // Toggle subtasks in Gantt
+      document.getElementById('chkShowSubtasks').addEventListener('change', (e) => {
+        state.showSubtasks = e.target.checked;
+        updateCalculationsAndGantt();
+      });
+
+      // Catalog Product View actions (Admin protected)
+      document.getElementById('btnAddCatalogProduct').addEventListener('click', () => {
+        if (!state.isAdmin) return;
+        const idx = state.catalogProducts.length + 1;
+        const newProd = {
+          id: 'prod_' + Date.now(),
+          nameZh: `新常规产品 ${idx}`,
+          nameEn: `Standard Product ${idx}`,
+          prepDays: 14,
+          testDays: 3,
+          installDays: 3
+        };
+        state.catalogProducts.push(newProd);
+        syncCatalogToProjectItems();
+        syncMasterDataToCloud(`管理员新增了常规产品【${newProd.nameZh}】`, `Admin added standard product [${newProd.nameEn}]`);
+        renderAll();
+      });
+
+      document.getElementById('btnResetCatalogProducts').addEventListener('click', () => {
+        if (!state.isAdmin) return;
+        state.catalogProducts = JSON.parse(JSON.stringify(DEFAULT_CATALOG_PRODUCTS));
+        initProjectItemsFromCatalog();
+        clearManualOverrides();
+        syncMasterDataToCloud('管理员将常规产品库恢复为出厂默认值', 'Admin reset standard product catalog to factory defaults');
+        renderAll();
+        showToast(I18N[state.lang].toastReset);
+      });
+
+      // Shipping Table View actions (Admin protected)
+      document.getElementById('filterRegionSelect').addEventListener('change', () => {
+        renderShippingCatalogView();
+      });
+
+      document.getElementById('btnAddCountryRow').addEventListener('click', () => {
+        if (!state.isAdmin) return;
+        const newCountry = {
+          id: 'country_' + Date.now(),
+          region: 'Asia',
+          nameZh: '新目的国',
+          nameEn: 'New Destination',
+          shippingDays: 15,
+          travelDays: 2,
+          noteZh: '主要港口',
+          noteEn: 'Main Port'
+        };
+        state.shippingTable.unshift(newCountry);
+        syncMasterDataToCloud(`管理员新增了目的国家【${newCountry.nameZh}】`, `Admin added destination country [${newCountry.nameEn}]`);
+        renderAll();
+      });
+
+      document.getElementById('btnResetShippingCatalog').addEventListener('click', () => {
+        if (!state.isAdmin) return;
+        state.shippingTable = JSON.parse(JSON.stringify(DEFAULT_SHIPPING_TABLE));
+        state.selectedCountryId = 'us_west';
+        syncMasterDataToCloud('管理员将全球船期总表恢复为默认值', 'Admin reset global shipping master table to defaults');
+        renderAll();
+        showToast(I18N[state.lang].toastReset);
+      });
+
+      // Export CSV
+      document.getElementById('btnExportCsv').addEventListener('click', () => {
+        const sched = computeSchedule();
+        const projName = document.getElementById('inputProjectName').value || 'Project';
+        const rows = [
+          ['Project Name', projName],
+          ['Calculation Mode', state.calcMode],
+          ['Start Date', formatDateISO(sched.projectStartDate)],
+          ['End Date', formatDateISO(sched.projectEndDate)],
+          ['Total Calendar Days', sched.totalDays],
+          [],
+          ['Category', 'Task', 'Owner', 'Priority', 'Processing', 'Start Date', 'End Date', 'Estimated']
+        ];
+        sched.phases.forEach(p => {
+          const sDate = p.rowType === 'site_ready' ? (p.customStartStr || '-') : formatDateISO(p.startDate);
+          const eDate = p.rowType === 'site_ready' ? (p.customEndStr || '-') : formatDateISO(p.endDate);
+          const estVal = (p.rowType === 'milestone' || p.rowType === 'site_ready') ? (p.customEstStr || '-') : p.duration;
+          rows.push([
+            p.category || '',
+            p.name,
+            p.owner || '',
+            p.priority || '',
+            p.processing || '',
+            sDate,
+            eDate,
+            estVal
+          ]);
+          if (state.showSubtasks && p.subtasks) {
+            p.subtasks.forEach(s => {
+              rows.push([
+                '  ' + s.name,
+                formatDateISO(s.startDate),
+                formatDateISO(s.endDate),
+                s.duration
+              ]);
+            });
+          }
+        });
+
+        const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Gantt_Schedule_${formatDateISO(sched.projectEndDate)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // Copy text summary
+      document.getElementById('btnCopySummary').addEventListener('click', () => {
+        const sched = computeSchedule();
+        const projName = document.getElementById('inputProjectName').value;
+        const cObj = state.shippingTable.find(c => c.id === state.selectedCountryId);
+        const cName = cObj ? (state.lang === 'zh' ? cObj.nameZh : cObj.nameEn) : '';
+
+        const lines = [];
+        if (state.lang === 'zh') {
+          lines.push(`【${projName} - 交付倒推排期表】`);
+          lines.push(`目的国家/地区：${cName}（预计船运 ${sched.finalShip} 天，工程师来回 ${sched.finalTravel} 天）`);
+          lines.push(`选用设备：${sched.activeItems.map(i => `${i.nameZh}×${i.qty}套`).join('、')}`);
+          lines.push(`全周期总计：${sched.totalDays} 天（${formatDateISO(sched.projectStartDate)} 至 ${formatDateISO(sched.projectEndDate)}）`);
+          lines.push(`----------------------------------------`);
+          sched.phases.forEach(p => {
+            lines.push(`• ${p.name}：${formatDateISO(p.startDate)} → ${formatDateISO(p.endDate)}（${p.duration} 天）`);
+          });
+        } else {
+          lines.push(`[${projName} - Project Delivery Schedule]`);
+          lines.push(`Destination: ${cName} (Sea Freight: ${sched.finalShip}d, Engineer Round-Trip: ${sched.finalTravel}d)`);
+          lines.push(`Equipment: ${sched.activeItems.map(i => `${i.nameEn} x${i.qty}`).join(', ')}`);
+          lines.push(`Total Duration: ${sched.totalDays} Days (${formatDateISO(sched.projectStartDate)} to ${formatDateISO(sched.projectEndDate)})`);
+          lines.push(`----------------------------------------`);
+          sched.phases.forEach(p => {
+            lines.push(`• ${p.name}: ${formatDateISO(p.startDate)} → ${formatDateISO(p.endDate)} (${p.duration}d)`);
+          });
+        }
+
+        const text = lines.join('\n');
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast(I18N[state.lang].toastCopied);
+        } catch (err) {
+          // ignore
+        }
+        document.body.removeChild(ta);
+      });
+
+      // Download baked index.html with latest catalogProducts and shippingTable as defaults
+      document.getElementById('btnDownloadBakedHtml').addEventListener('click', () => {
+        let htmlSource = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const prodJson = JSON.stringify(state.catalogProducts, null, 6);
+        const shipJson = JSON.stringify(state.shippingTable, null, 6);
+        htmlSource = htmlSource.replace(/const DEFAULT_CATALOG_PRODUCTS = \[[\s\S]*?\];/, 'const DEFAULT_CATALOG_PRODUCTS = ' + prodJson + ';');
+        htmlSource = htmlSource.replace(/const DEFAULT_SHIPPING_TABLE = \[[\s\S]*?\];/, 'const DEFAULT_SHIPPING_TABLE = ' + shipJson + ';');
+        const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast(state.lang === 'zh' ? '已导出包含最新默认总表的 index.html！' : 'Exported index.html with latest defaults!');
+      });
+
+      // Print
+      document.getElementById('btnPrint').addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initEvents();
+      renderAll();
+      fetchCloudStoreOnInit();
+    });
+  </script>
+</body>
+</html>
