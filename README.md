@@ -1,4 +1,4 @@
-# 项目交付与开业倒推排期系统 (Cloudflare Pages + KV 多人实时共享版) via gemini
+# 项目交付与开业倒推排期系统 (Cloudflare Pages + KV 多人实时共享版) via gemini argon
 
 ## 包含文件
 - `index.html`: 前端单页应用（支持甘特图倒推、多套设备合算、多人排期共享列表、历史版本回滚、管理员权限锁）
