@@ -9,4 +9,4 @@
 1. 在 Cloudflare Dashboard -> **Storage & Databases -> KV** 创建命名空间 `GANTT_KV_STORE`。
 2. 在 **Workers & Pages -> Create -> Pages** 上传本压缩包解压后的文件夹（含 `index.html` 与 `functions/` 目录）。
 3. 在 Pages 项目的 **Settings -> Functions -> KV namespace bindings** 中绑定变量名 `GANTT_KV` 指向 `GANTT_KV_STORE`，并重新部署一次即可生效。
-4. 默认管理员密码为 `admin888`（解锁后可维护常规产品库、国家与预计船期，也可删除历史排期）。
+4. 默认管理员(解锁后可维护常规产品库、国家与预计船期，也可删除历史排期）。
