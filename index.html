@@ -447,17 +447,17 @@
         <!-- Visual Gantt Chart Container (Semantic Table + Proportional Timeline) -->
         <div class="border border-slate-300 rounded-xl overflow-hidden bg-white shadow-sm">
           <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full min-w-[1280px] table-fixed border-collapse text-xs select-none">
+            <table class="w-full min-w-[1310px] table-fixed border-collapse text-xs select-none">
               <colgroup>
-                <col class="w-[116px]" />
-                <col class="w-[224px]" />
-                <col class="w-[96px]" />
+                <col class="w-[130px]" />
+                <col class="w-[246px]" />
+                <col class="w-[92px]" />
                 <col class="w-[74px]" />
-                <col class="w-[88px]" />
                 <col class="w-[96px]" />
-                <col class="w-[96px]" />
+                <col class="w-[92px]" />
+                <col class="w-[92px]" />
                 <col class="w-[68px]" />
-                <col class="w-[422px]" />
+                <col class="w-[420px]" />
               </colgroup>
               <thead>
                 <tr class="bg-[#0b5ed7] text-white border-b border-blue-800 font-semibold">
@@ -1022,19 +1022,19 @@
         lblCopySummary: 'Copy Summary',
         lblPrint: 'Print / Save PDF',
         ganttColCategory: 'Category',
-        ganttColTask: 'Task',
+        ganttColTask: 'Task Name',
         ganttColOwner: 'Owner',
         ganttColPriority: 'Priority',
-        ganttColProcessing: 'Processing',
+        ganttColProcessing: 'Status',
         ganttColDates: 'Start → End Date',
         ganttColStart: 'Start Date',
         ganttColEnd: 'End Date',
-        ganttColDuration: 'Estimated',
-        legPrep: 'Prep Phase (Parallel MAX)',
+        ganttColDuration: 'Est. Days',
+        legPrep: 'Equipment Prep (Parallel MAX)',
         legTest: 'Factory Testing (Cumulative SUM)',
         legShip: 'Sea Freight (By Country)',
-        legTravel: 'Engineer Round-Trip (Asia 2d / EU·US·AU 4-5d)',
-        legInstall: 'Install, Commissioning & Training (SUM)',
+        legTravel: 'Engineer Travel (Asia 2d / Americas·EU·AU 4-5d)',
+        legInstall: 'Installation & Training (Cumulative SUM)',
         ganttFootnote: 'Note: All dates are calendar days inclusive of start and end dates. Edit any value above to add buffer days.',
         phasePrep: '1. Stock Preparation Phase (Parallel MAX)',
         phaseTest: '2. Factory Integration & Testing (Cumulative)',
@@ -1568,14 +1568,15 @@
       const tm = state.taskMeta || {};
 
       const isZh = state.lang === 'zh';
-      const catPre = isZh ? '发货前准备' : 'Pre-shipment';
-      const catShip = isZh ? '包装与船运' : 'Packing & Shipping';
-      const catSite = isZh ? '现场场地准备' : 'Site Ready';
-      const catInst = isZh ? '安装调试与培训' : 'Installation & Training';
+      const catPre = isZh ? '发货前准备' : 'Pre-Shipment';
+      const catShip = isZh ? '包装与船运' : 'Packing & Freight';
+      const catSite = isZh ? '现场场地准备' : 'Site Readiness';
+      const catInst = isZh ? '安装调试与培训' : 'Install & Training';
 
-      const ownCcPm = isZh ? '中控与项目组' : 'CC&PM';
-      const ownSale = isZh ? '销售与物流' : 'Sale';
-      const ownSite = isZh ? '现场施工方' : "Site's contractor";
+      const ownProc = isZh ? '采购' : 'Purchasing';
+      const ownTest = isZh ? '测试' : 'Testing';
+      const ownSale = isZh ? '销售与物流' : 'Sales & Freight';
+      const ownSite = isZh ? '现场施工方' : 'Site Contractor';
       const ownEng = isZh ? '工程师' : 'Engineer';
 
       // 1. Pre-shipment: Stock Preparation (MAX)
@@ -1588,7 +1589,7 @@
         prepSubtasks.push({
           category: catPre,
           name: dict.subPrepPrefix + (isZh ? item.nameZh : item.nameEn) + ` ×${item.qty}`,
-          owner: ownCcPm,
+          owner: ownProc,
           duration: pDays,
           startOffset: prepStartOffset,
           endOffset: subEnd,
@@ -1604,7 +1605,7 @@
           overrideField: 'prep',
           category: catPre,
           name: isZh ? '常规产品备货（同步取最长）' : 'Equipment Stock Preparation',
-          owner: tm.prep?.owner || ownCcPm,
+          owner: (tm.prep?.owner && tm.prep.owner !== '中控与项目组' && tm.prep.owner !== 'CC&PM') ? tm.prep.owner : ownProc,
           priority: tm.prep?.priority || 'High',
           processing: tm.prep?.processing || 'In Progress',
           duration: finalPrep,
@@ -1629,7 +1630,7 @@
         testSubtasks.push({
           category: catPre,
           name: dict.subTestPrefix + (isZh ? item.nameZh : item.nameEn) + ` (${item.qty}×${item.testDays}${dict.dayUnit})`,
-          owner: ownCcPm,
+          owner: ownTest,
           duration: itemTestDays,
           startOffset: testSubCursor,
           endOffset: testSubCursor + itemTestDays,
@@ -1644,8 +1645,8 @@
         key: 'test',
         overrideField: 'test',
         category: catPre,
-        name: isZh ? '发货前系统联调测试（多套累加）' : 'Pre-shipment System Testing',
-        owner: tm.test?.owner || ownCcPm,
+        name: isZh ? '发货前系统联调测试（多套累加）' : 'Pre-Shipment System Testing',
+        owner: (tm.test?.owner && tm.test.owner !== '中控与项目组' && tm.test.owner !== 'CC&PM') ? tm.test.owner : ownTest,
         priority: tm.test?.priority || 'High',
         processing: tm.test?.processing || 'Pending',
         duration: finalTest,
@@ -1711,7 +1712,7 @@
         key: 'siteElec',
         rowType: 'site_ready',
         category: catSite,
-        name: isZh ? '客户现场强弱电与网络施工就绪' : "Site's Electrical and Network Work Ready",
+        name: isZh ? '客户现场强弱电与网络施工就绪' : 'Site Electrical & Network Readiness',
         owner: tm.siteElec?.owner || ownSite,
         priority: tm.siteElec?.priority || 'Critical',
         processing: tm.siteElec?.processing || 'Pending',
@@ -1732,7 +1733,7 @@
         key: 'siteEnv',
         rowType: 'site_ready',
         category: catSite,
-        name: isZh ? '客户现场环境装修与软包工程就绪' : "Site's Environment/Softplay Work Ready",
+        name: isZh ? '客户现场环境装修与软包工程就绪' : 'Site Environment & Softplay Readiness',
         owner: tm.siteEnv?.owner || ownSite,
         priority: tm.siteEnv?.priority || 'Critical',
         processing: tm.siteEnv?.processing || 'Pending',
@@ -1800,7 +1801,7 @@
         key: 'hwInstall',
         overrideField: 'hwInstall',
         category: catInst,
-        name: isZh ? '硬件安装与综合布线' : 'Hardware installation and cabling',
+        name: isZh ? '硬件安装与综合布线' : 'Hardware Installation & Cabling',
         owner: tm.hwInstall?.owner || ownEng,
         priority: tm.hwInstall?.priority || 'High',
         processing: tm.hwInstall?.processing || 'Pending',
@@ -1821,7 +1822,7 @@
         key: 'gameSw',
         overrideField: 'gameSw',
         category: catInst,
-        name: isZh ? '游戏软件安装与联调测试' : 'Game software installation and testing',
+        name: isZh ? '游戏软件安装与联调测试' : 'Game Software Setup & Testing',
         owner: tm.gameSw?.owner || ownEng,
         priority: tm.gameSw?.priority || 'High',
         processing: tm.gameSw?.processing || 'Pending',
@@ -1842,7 +1843,7 @@
         key: 'ccSw',
         overrideField: 'ccSw',
         category: catInst,
-        name: isZh ? '中控系统软件安装与测试' : 'Central Control system software installation and testing',
+        name: isZh ? '中控系统软件安装与测试' : 'Central Control Software Testing',
         owner: tm.ccSw?.owner || ownEng,
         priority: tm.ccSw?.priority || 'High',
         processing: tm.ccSw?.processing || 'Pending',
@@ -1863,7 +1864,7 @@
         key: 'userTrain',
         overrideField: 'userTrain',
         category: catInst,
-        name: isZh ? '现场人员操作与运维培训' : 'User training',
+        name: isZh ? '现场人员操作与运维培训' : 'On-Site Ops & User Training',
         owner: tm.userTrain?.owner || ownEng,
         priority: tm.userTrain?.priority || 'Medium',
         processing: tm.userTrain?.processing || 'Pending',
@@ -2426,16 +2427,16 @@
             <td class="py-2.5 px-3 border-r border-rose-200/80 bg-slate-100/70 text-center text-[11px] font-semibold text-slate-500">
               ${isZh ? '关键节点' : 'Milestone'}
             </td>
-            <td class="py-2.5 px-3 border-r border-rose-300/70 bg-[#eab3b3]/75 font-bold text-rose-950 truncate" title="${phase.name}">
+            <td class="py-2.5 px-3 border-r border-rose-300/70 bg-rose-50/80 font-bold text-rose-950 truncate" title="${phase.name}">
               🚩 ${phase.name}
             </td>
-            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center text-rose-900 font-medium">-</td>
-            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center text-rose-900 font-medium">-</td>
-            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center">
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-rose-50/80 text-center text-rose-900 font-medium">-</td>
+            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-rose-50/80 text-center text-rose-900 font-medium">-</td>
+            <td class="py-2.5 px-1.5 border-r border-rose-300/70 bg-rose-50/80 text-center">
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-700 text-white whitespace-nowrap">${isZh ? '里程碑' : 'Milestone'}</span>
             </td>
-            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center font-mono font-bold text-rose-950">${etaStr}</td>
-            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-[#eab3b3]/75 text-center font-mono font-bold text-rose-950">${etaStr}</td>
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-rose-50/80 text-center font-mono font-bold text-rose-950">${etaStr}</td>
+            <td class="py-2.5 px-2 border-r border-rose-300/70 bg-rose-50/80 text-center font-mono font-bold text-rose-950">${etaStr}</td>
             <td class="py-2.5 px-1.5 border-r border-rose-200/80 bg-slate-100/70 text-center font-mono text-slate-500">0</td>
             <td class="py-2 px-3 relative align-middle bg-rose-50/40">
               ${timelineGuidesHtml}
@@ -2473,7 +2474,7 @@
               <span class="px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-200 text-[11px] font-semibold whitespace-nowrap">${isZh ? '紧急' : 'Critical'}</span>
             </td>
             <td class="py-2 px-1.5 border-r border-slate-200 text-center">
-              <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
+              <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp w-full max-w-[88px] text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
                 <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待就绪' : 'Pending'}</option>
                 <option value="Ready" ${phase.processing === 'Ready' ? 'selected' : ''}>${isZh ? '已就绪' : 'Ready'}</option>
               </select>
@@ -2511,7 +2512,7 @@
 
         let catCellHtml = '';
         if (item.catSpan > 0) {
-          catCellHtml = `<td rowspan="${item.catSpan}" class="py-2.5 px-3 border-r border-slate-200 font-bold text-slate-800 bg-slate-50/70 align-middle">${item.categoryText}</td>`;
+          catCellHtml = `<td rowspan="${item.catSpan}" class="py-2.5 px-2.5 border-r border-slate-200 font-bold text-slate-800 bg-slate-50/70 align-middle leading-snug text-[11px]">${item.categoryText}</td>`;
         }
 
         const tr = document.createElement('tr');
@@ -2525,14 +2526,14 @@
             ${phase.owner || ''}
           </td>
           <td class="py-2 px-1.5 border-r border-slate-200 text-center">
-            <select data-meta-key="${phase.key}" data-meta-field="priority" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
+            <select data-meta-key="${phase.key}" data-meta-field="priority" class="gantt-meta-inp w-full max-w-[66px] text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
               <option value="High" ${phase.priority === 'High' ? 'selected' : ''}>${isZh ? '高' : 'High'}</option>
               <option value="Medium" ${phase.priority === 'Medium' ? 'selected' : ''}>${isZh ? '中' : 'Medium'}</option>
               <option value="Low" ${phase.priority === 'Low' ? 'selected' : ''}>${isZh ? '低' : 'Low'}</option>
             </select>
           </td>
           <td class="py-2 px-1.5 border-r border-slate-200 text-center">
-            <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1.5 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
+            <select data-meta-key="${phase.key}" data-meta-field="processing" class="gantt-meta-inp w-full max-w-[88px] text-[11px] bg-slate-50 border border-slate-200 text-slate-700 rounded px-1 py-0.5 cursor-pointer focus:outline-none focus:border-indigo-500">
               <option value="Pending" ${phase.processing === 'Pending' ? 'selected' : ''}>${isZh ? '待开始' : 'Pending'}</option>
               <option value="In Progress" ${phase.processing === 'In Progress' ? 'selected' : ''}>${isZh ? '进行中' : 'In Progress'}</option>
               <option value="Done" ${phase.processing === 'Done' ? 'selected' : ''}>${isZh ? '已完成' : 'Done'}</option>
@@ -3360,15 +3361,66 @@
       document.getElementById('btnUnlockFromShipping').addEventListener('click', handleAdminToggleClick);
       document.getElementById('btnCloseAdminModal').addEventListener('click', () => modalAdmin.classList.add('hidden'));
       document.getElementById('btnCancelAdminModal').addEventListener('click', () => modalAdmin.classList.add('hidden'));
-      document.getElementById('btnSubmitAdminPin').addEventListener('click', () => {
+      document.getElementById('btnSubmitAdminPin').addEventListener('click', async () => {
         const pinVal = (document.getElementById('inputAdminPin').value || '').trim();
+        if (!pinVal) {
+          errAdmin.textContent = state.lang === 'zh' ? '请输入管理员密码' : 'Please enter admin PIN';
+          errAdmin.classList.remove('hidden');
+          return;
+        }
+
+        const submitBtn = document.getElementById('btnSubmitAdminPin');
+        const origBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = state.lang === 'zh' ? '正在验证...' : 'Verifying...';
+
+        try {
+          // 1. Verify against Cloudflare Pages backend (reads env.ADMIN_PIN)
+          const res = await fetch(CLOUD_API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verifyPin', adminPin: pinVal })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.ok) {
+              state.isAdmin = true;
+              state.adminPin = pinVal;
+              modalAdmin.classList.add('hidden');
+              errAdmin.classList.add('hidden');
+              renderAll();
+              showToast(state.lang === 'zh' ? '✅ 管理员身份验证通过！现在可维护产品库与各国船期总表' : '✅ Admin Mode Unlocked!');
+              submitBtn.disabled = false;
+              submitBtn.textContent = origBtnText;
+              return;
+            }
+          }
+
+          if (res.status === 403) {
+            errAdmin.textContent = state.lang === 'zh' ? '密码不正确，请重新输入。' : 'Incorrect PIN, please try again.';
+            errAdmin.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = origBtnText;
+            return;
+          }
+        } catch (e) {
+          // Network error or local preview mode fallback
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = origBtnText;
+
+        // 2. Offline / local fallback (when not deployed on Cloudflare Pages)
         if (pinVal === state.adminPin || pinVal === 'admin888') {
           state.isAdmin = true;
           state.adminPin = pinVal;
           modalAdmin.classList.add('hidden');
+          errAdmin.classList.add('hidden');
           renderAll();
           showToast(state.lang === 'zh' ? '✅ 管理员身份验证通过！现在可维护产品库与各国船期总表' : '✅ Admin Mode Unlocked!');
         } else {
+          errAdmin.textContent = state.lang === 'zh' ? '密码不正确，请重新输入。' : 'Incorrect PIN, please try again.';
           errAdmin.classList.remove('hidden');
         }
       });
